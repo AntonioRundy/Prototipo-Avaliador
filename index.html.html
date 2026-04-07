@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Plataforma de Avaliação - Prova Integrada</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
+        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        
+        #statusBox { padding: 15px; border-radius: 8px; font-weight: bold; font-size: 1.2em; margin-bottom: 20px; min-height: 35px; transition: 0.3s; border: 2px solid transparent; }
+        .status-loading { background-color: #fcf8e3; color: #8a6d3b; border-color: #faebcc; }
+        .status-normal { background-color: #dff0d8; color: #3c763d; border-color: #d6e9c6; }
+        .status-danger { background-color: #f2dede; color: #c0392b; border-color: #ebccd1; box-shadow: 0 0 10px rgba(231, 76, 60, 0.2); }
+        .status-grave { background-color: #000; color: #ff4d4d; border-color: #ff4d4d; animation: piscar 0.8s infinite; text-transform: uppercase; }
+
+        @keyframes piscar { 50% { opacity: 0.5; } }
+
+        /* Painel de Áudio */
+        .audio-monitor { margin: 15px 0; padding: 15px; background: #2c3e50; border-radius: 12px; color: white; }
+        .audio-track { width: 100%; height: 25px; background: #1a252f; border-radius: 15px; overflow: hidden; position: relative; border: 2px solid #34495e; }
+        #aBar { width: 0%; height: 100%; background: linear-gradient(90deg, #27ae60, #f1c40f, #e74c3c); transition: width 0.1s ease-out; }
+        .audio-label { font-weight: bold; margin-bottom: 10px; display: block; font-size: 1.1em; }
+
+        #yantikaBtn { padding: 20px 50px; font-size: 1.4em; font-weight: bold; color: white; background-color: #27ae60; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4); transition: 0.3s; }
+        #yantikaBtn:hover { background-color: #2ecc71; transform: translateY(-2px); }
+
+        /* Vídeos Controlados */
+        .videos-wrapper { display: none; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 20px; margin-bottom: 30px; }
+        .video-container { position: relative; border-radius: 12px; overflow: hidden; border: 4px solid #dee2e6; background: #000; transition: 0.3s; }
+        video { width: 100%; max-width: 350px; display: block; }
+        
+        .alert-border { border-color: #e74c3c !important; box-shadow: 0 0 20px rgba(231, 76, 60, 0.4); }
+
+        /* Área do Google Forms */
+        .exam-area { display: none; width: 100%; margin-top: 20px; border-radius: 15px; border: 3px solid #3498db; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        iframe { width: 100%; height: 900px; border: none; }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+    <div class="container">
+        <h1 style="color: #2c3e50;">Sistema Integrado de Avaliação</h1>
+        <p style="color: #7f8c8d;">Plataforma Segura: A prova será libertada após a validação biométrica e acústica.</p>
+
+        <button id="yantikaBtn">AUTORIZAR E INICIAR EXAME</button>
+
+        <div id="sBox" class="status-loading" style="display: none;">A aguardar sensores...</div>
+
+        <div class="audio-monitor" id="aArea" style="display:none;">
+            <span class="audio-label" id="aTxt">🎤 Monitorização Acústica: Ativando...</span>
+            <div class="audio-track"><div id="aBar"></div></div>
+        </div>
+
+        <div class="videos-wrapper" id="vWrapper">
+            <div class="video-container" id="c1">
+                <video id="vCam" autoplay muted playsinline></video>
+                <canvas id="cvs" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
+            </div>
+            <div class="video-container" id="c2">
+                <video id="vScr" autoplay muted playsinline></video>
+            </div>
+        </div>
+
+        <div class="exam-area" id="eArea">
+            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSe-P_Z4n5m4oIuTj3J_O5rO9xK4m5H-6_M8nU_P5-zVz_O_Xw/viewform?embedded=true">Carregando formulário universitário…</iframe>
+        </div>
+    </div>
+
+    <script>
+        // Variáveis Ofuscadas (Kikongo)
+        const vCam = document.getElementById("vCam");
+        const vScr = document.getElementById("vScr");
+        const sBox = document.getElementById("sBox");
+        const aBar = document.getElementById("aBar");
+        const aTxt = document.getElementById("aTxt");
+        const yantikaBtn = document.getElementById("yantikaBtn");
+        const eArea = document.getElementById("eArea");
+        
+        let kuyingila = false; // Monitorização ativa
+        let mazuNza; // AudioContext
+
+        // Configuração da IA (LuseMatadi = Rosto em Kikongo)
+        const luseMatadi = new FaceMesh({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`});
+        luseMatadi.setOptions({ maxNumFaces: 2, refineLandmarks: true, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
+
+        luseMatadi.onResults((bima) => {
+            if (!kuyingila) return;
+
+            // Deteção de Intrusos ou Ausência
+            if (!bima.multiFaceLandmarks || bima.multiFaceLandmarks.length === 0) {
+                samuna("⚠️ ALERTA GRAVE: Estudante ausente da câmara!", "grave");
+                return;
+            } else if (bima.multiFaceLandmarks.length > 1) {
+                samuna("⚠️ VIOLAÇÃO: Mais de uma pessoa detetada!", "grave");
+                return;
+            }
+
+            const muntu = bima.multiFaceLandmarks[0];
+            const disu = muntu[473]; // Íris
+            const mesoLumonso = muntu[362]; // Canto olho esquerdo
+            const mesoLubakala = muntu[263]; // Canto olho direito
+            const nwaZulu = muntu[13]; // Lábio superior
+            const nwaYanda = muntu[14]; // Lábio inferior
+
+            // Matemática Equilibrada (nzilaMeso = Caminho dos olhos)
+            const nzilaMeso = (disu.x - mesoLumonso.x) / (mesoLubakala.x - mesoLumonso.x);
+            const nwaZibula = Math.abs(nwaYanda.y - nwaZulu.y); // Abertura boca
+
+            if (nwaZibula > 0.055) { 
+                samuna("⚠️ ALERTA: Movimento labial suspeito!", "danger");
+            } else if (nzilaMeso < 0.38 || nzilaMeso > 0.62) {
+                samuna("⚠️ ALERTA: Olhar fora da área de exame!", "danger");
+            } else {
+                if (sBox.className !== "status-danger") {
+                    samuna("✅ Status: Monitorização Ativa e Segura", "normal");
+                }
+            }
+        });
+
+        // Função de Áudio (Wunikina = Ouvir em Kikongo)
+        async function wunikina(s) {
+            mazuNza = new (window.AudioContext || window.webkitAudioContext)();
+            const nto = mazuNza.createMediaStreamSource(s);
+            const fimpulula = mazuNza.createScriptProcessor(2048, 1, 1);
+            nto.connect(fimpulula);
+            fimpulula.connect(mazuNza.destination);
+
+            fimpulula.onaudioprocess = function(e) {
+                const mazu = e.inputBuffer.getChannelData(0);
+                let ntalu = 0;
+                for (let i = 0; i < mazu.length; i++) ntalu += mazu[i] * mazu[i];
+                const ngolo = Math.sqrt(ntalu / mazu.length);
+                const tezo = Math.min(ngolo * 600, 100); // Sensibilidade Turbo
+
+                aBar.style.width = tezo + "%";
+
+                if (tezo > 65) {
+                    aBar.style.background = "#e74c3c";
+                    aTxt.innerText = "⚠️ Nível de Ruído: ALTO (Risco de fraude)";
+                    samuna("⚠️ ALERTA: Ruído ambiente excessivo!", "danger");
+                } else {
+                    aBar.style.background = "#27ae60";
+                    aTxt.innerText = "🔈 Nível de Ruído: Silencioso";
+                }
+            };
+        }
+
+        // Iniciar (Yantika = Começar em Kikongo)
+        yantikaBtn.addEventListener("click", async () => {
+            yantikaBtn.style.display = "none";
+            document.getElementById("aArea").style.display = "block";
+            document.getElementById("vWrapper").style.display = "flex";
+            sBox.style.display = "block";
+
+            try {
+                // Captura Ecrã
+                const t1 = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                vScr.srcObject = t1;
+                t1.getVideoTracks()[0].onended = () => samuna("⚠️ VIOLAÇÃO: Partilha de ecrã encerrada!", "grave");
+
+                // Captura Cam e Mic
+                const t2 = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                vCam.srcObject = t2;
+
+                if (mazuNza) await mazuNza.resume();
+                await wunikina(t2);
+                
+                await luseMatadi.initialize();
+                kuyingila = true;
+                eArea.style.display = "block";
+                
+                function luzingu() {
+                    if (kuyingila) {
+                        luseMatadi.send({image: vCam});
+                        requestAnimationFrame(luzingu);
+                    }
+                }
+                luzingu();
+            } catch (err) {
+                alert("Erro: Deve autorizar a câmara, o microfone e o ecrã para realizar a prova.");
+                location.reload();
+            }
+        });
+
+        // Função de Alerta (Samuna = Avisar em Kikongo)
+        function samuna(msg, tipo) {
+            sBox.innerText = msg;
+            sBox.className = "status-" + tipo;
+            document.getElementById("c1").className = "video-container " + (tipo !== 'normal' ? 'alert-border' : '');
+        }
+    </script>
+</body>
+</html>
