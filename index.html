@@ -12,32 +12,23 @@
         label { display: block; font-weight: bold; margin-bottom: 5px; color: #2c3e50; }
         input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1em; box-sizing: border-box; }
         
-        #yantikaBtn { width: 100%; padding: 20px; font-size: 1.4em; font-weight: bold; color: white; background-color: #27ae60; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3); transition: 0.3s; }
-        #yantikaBtn:hover { background-color: #219653; transform: translateY(-2px); }
+        #yantikaBtn { width: 100%; padding: 20px; font-size: 1.4em; font-weight: bold; color: white; background-color: #27ae60; border: none; border-radius: 12px; cursor: pointer; transition: 0.3s; }
         
-        #finalizarBtn { display: none; margin: 30px auto 10px auto; padding: 15px 40px; background: #c0392b; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.2em; box-shadow: 0 4px 15px rgba(192, 57, 43, 0.4); }
+        #finalizarBtn { display: none; margin: 30px auto 10px auto; padding: 15px 40px; background: #c0392b; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.2em; }
 
-        /* O NOVO PAINEL FLUTUANTE */
+        /* PAINEL FLUTUANTE (No Canto Superior Esquerdo) */
         #painelFlutuante {
-            display: none; /* Escondido até iniciar */
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            width: 250px;
-            background: rgba(255, 255, 255, 0.98);
-            border: 3px solid #2c3e50;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-            z-index: 9999;
-            text-align: center;
+            display: none; position: fixed; top: 20px; left: 20px; width: 250px;
+            background: rgba(255, 255, 255, 0.98); border: 3px solid #2c3e50;
+            border-radius: 12px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            z-index: 9999; text-align: center;
         }
         
-        #painelFlutuante video { width: 100%; border-radius: 8px; border: 2px solid #bdc3c7; margin: 10px 0; background: #000; }
+        #painelFlutuante video { width: 100%; border-radius: 8px; border: 2px solid #bdc3c7; margin: 10px 0; background: #000; transform: scaleX(-1); /* Efeito de espelho natural */ }
         
         #placarConfianca { font-size: 1.3em; font-weight: bold; color: #27ae60; padding: 8px; border-radius: 6px; background: #eaeded; border: 2px solid #27ae60; transition: 0.3s; margin-bottom: 10px; }
         
-        #sBox { font-size: 0.95em; padding: 10px; border-radius: 6px; font-weight: bold; min-height: 45px; display: flex; align-items: center; justify-content: center; transition: 0.3s; border: 2px solid transparent; }
+        #sBox { font-size: 0.9em; padding: 10px; border-radius: 6px; font-weight: bold; min-height: 45px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         
         .status-normal { background-color: #dff0d8; color: #3c763d; border-color: #d6e9c6; }
         .status-danger { background-color: #f2dede; color: #c0392b; border-color: #ebccd1; }
@@ -59,26 +50,26 @@
 
     <div class="container">
         <h1>Sistema Integrado de Avaliação Geofísica</h1>
-        <p id="instrucoesTxt">Preencha os seus dados para desbloquear a prova.</p>
+        <p id="instrucoesTxt">Preencha os seus dados para calibração e início do exame.</p>
         
         <div id="idArea">
             <div class="campo"><label>Nome Completo:</label><input type="text" id="mZina"></div>
             <div class="campo"><label>Número de Estudante:</label><input type="text" id="mNtalu"></div>
-            <button id="yantikaBtn">AUTORIZAR E INICIAR EXAME</button>
+            <button id="yantikaBtn">CALIBRAR E INICIAR EXAME</button>
         </div>
 
         <div id="painelFlutuante">
             <div id="placarConfianca">Integridade: 100%</div>
             <div id="sBox" class="status-normal">A aguardar câmara...</div>
             <video id="vCam" autoplay muted playsinline></video>
-            <div style="font-size: 0.8em; color: #7f8c8d; font-weight: bold;">🎤 Som</div>
+            <div style="font-size: 0.8em; color: #7f8c8d; font-weight: bold;">🎤 Ruído Ambiente</div>
             <div class="audio-track"><div id="aBar"></div></div>
         </div>
 
         <video id="vScr" autoplay muted playsinline style="display:none;"></video>
 
         <div class="exam-area" id="eArea">
-            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeyDMAP2o-ibGcw386HSH0RvzCip3IsAu2wZQq1IQUvMot8GQ/viewform?embedded=true"></iframe>
+            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeyDMAP2o-ibGcw386HSH0RvzCip3IsAu2wZQq1IQUvHarveyMot8GQ/viewform?embedded=true"></iframe>
         </div>
 
         <button id="finalizarBtn">FINALIZAR EXAME E ENVIAR RELATÓRIO</button>
@@ -87,7 +78,7 @@
     <div class="rodape">Desenvolvido pelo <strong>Centro de Estudo Galileu</strong> | Plataforma de Avaliação Soberana © 2026</div>
 
     <script>
-        const WEBHOOK_URL = "https://script.google.com/macros/library/d/11VN3yk8gv1E2PvhCQOb9BCCpvHUljwN19g-k6VpVOqmKv3OiQFw6SDpB/6";
+        const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycby9YtOYTxPs8ByiUZdngikkNHxwnvZlKyD-til8XDzIRfgV--8J_SeevIAS2OpJJKo/exec";
         
         const vCam = document.getElementById("vCam");
         const sBox = document.getElementById("sBox");
@@ -101,49 +92,94 @@
         let mazuNza;
         let galeriaFotos = [];
 
+        // Variáveis do Cronómetro de Distração (Regra dos 1.5s)
+        let inicioDistracao = 0;
+        let estaDistraido = false;
+
         document.addEventListener("visibilitychange", () => {
             if (document.hidden && kuyingila) {
                 samuna("⚠️ GRAVE: Saiu da aba!", "grave");
-                subtrair(20, "Mudança de Aba/Janela detetada");
+                subtrair(20, "Mudança de Aba/Navegador detetada");
             }
         });
 
         const luseMatadi = new FaceMesh({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`});
-        luseMatadi.setOptions({ maxNumFaces: 2, refineLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        luseMatadi.setOptions({ maxNumFaces: 2, refineLandmarks: true, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
 
         luseMatadi.onResults((bima) => {
             if (!kuyingila) return;
-            if (!bima.multiFaceLandmarks || bima.multiFaceLandmarks.length === 0) {
-                samuna("⚠️ Ausência detetada!", "grave");
-                subtrair(2, "Ausência da câmara");
-            } else if (bima.multiFaceLandmarks.length > 1) {
-                samuna("⚠️ Múltiplas pessoas!", "grave");
-                subtrair(10, "Presença de terceiros");
-            } else {
-                const m = bima.multiFaceLandmarks[0];
-                const nwaZ = Math.abs(m[14].y - m[13].y);
-                const nzMeso = (m[473].x - m[362].x) / (m[263].x - m[362].x);
+            
+            let condicaoInfracao = false;
+            let msgInfracao = "";
 
-                if (nwaZ > 0.05) {
-                    samuna("⚠️ Movimento labial!", "danger");
-                    subtrair(1, "Suspeita de fala");
-                } else if (nzMeso < 0.40 || nzMeso > 0.60) {
-                    samuna("⚠️ Olhar desviado!", "danger");
-                    subtrair(0.5, "Desvio de olhar");
+            if (!bima.multiFaceLandmarks || bima.multiFaceLandmarks.length === 0) {
+                condicaoInfracao = true;
+                msgInfracao = "⚠️ Ausência de rosto!";
+            } else if (bima.multiFaceLandmarks.length > 1) {
+                samuna("⚠️ Múltiplas pessoas!", "grave"); // Imediato
+                subtrair(10, "Presença de terceiros (Possível Cola)");
+            } else {
+                const rosto = bima.multiFaceLandmarks[0];
+                
+                // 1. Deteção Labial (Fala)
+                const nwaZ = Math.abs(rosto[14].y - rosto[13].y);
+                
+                // 2. Head Pose (Rotação da Cabeça Esq/Dir)
+                // Compara a posição do nariz (1) com os extremos do rosto (234 e 454)
+                const propRostoX = (rosto[1].x - rosto[234].x) / (rosto[454].x - rosto[234].x);
+                const cabecaVirada = (propRostoX < 0.35 || propRostoX > 0.65);
+
+                // 3. Iris Tracking (Gaze / Vetor do Olhar)
+                // Íris direita (473) em relação ao canto do olho (362 e 263)
+                const propOlho = (rosto[473].x - rosto[362].x) / (rosto[263].x - rosto[362].x);
+                const olharDesviado = (propOlho < 0.35 || propOlho > 0.65);
+
+                if (nwaZ > 0.06) {
+                    condicaoInfracao = true; msgInfracao = "⚠️ Possível Comunicação/Fala";
+                } else if (cabecaVirada) {
+                    condicaoInfracao = true; msgInfracao = "⚠️ Cabeça virada fora do eixo";
+                } else if (olharDesviado) {
+                    condicaoInfracao = true; msgInfracao = "⚠️ Olhar fixado fora da tela";
+                }
+            }
+
+            // --- A REGRA DOS 1.5 SEGUNDOS (Persistência) ---
+            if (condicaoInfracao) {
+                if (!estaDistraido) {
+                    estaDistraido = true;
+                    inicioDistracao = Date.now(); // Inicia o cronómetro
                 } else {
-                    if (sBox.className !== "status-danger" && sBox.className !== "status-grave") samuna("✅ Monitorização Segura", "normal");
+                    let tempoDecorrido = Date.now() - inicioDistracao;
+                    if (tempoDecorrido > 1500) { // Se passou de 1.5 segundos (1500ms)
+                        samuna(msgInfracao, "danger");
+                        subtrair(1, msgInfracao + " (> 1.5s)");
+                        inicioDistracao = Date.now(); // Reseta o cronómetro para não descontar tudo de uma vez
+                    }
+                }
+            } else {
+                // Voltou a olhar para o centro / Parou de falar
+                estaDistraido = false;
+                if (sBox.className !== "status-grave") {
+                    samuna("✅ Foco Validado", "normal");
                 }
             }
         });
 
+        // O Fotógrafo Otimizado (Resolução de 320x240 para não entupir o Google Script)
         function capturarFotoAuditoria() {
             if (galeriaFotos.length < 4 && vCam.readyState === 4 && kuyingila) {
                 const canvas = document.createElement("canvas");
-                canvas.width = 640; canvas.height = 480;
-                canvas.getContext("2d").drawImage(vCam, 0, 0, 640, 480);
-                galeriaFotos.push(canvas.toDataURL("image/jpeg", 0.4));
+                // Resolução reduzida propositadamente para garantir o envio do relatório
+                canvas.width = 320; 
+                canvas.height = 240;
+                canvas.getContext("2d").drawImage(vCam, 0, 0, 320, 240);
+                
+                // Compressão agressiva mas visível (30% de qualidade)
+                galeriaFotos.push(canvas.toDataURL("image/jpeg", 0.3)); 
                 
                 if(galeriaFotos.length < 4) {
+                    // Tira foto a cada 3 a 5 minutos (180000ms a 300000ms) na prova real
+                    // (Para testar agora, deixei de 20 a 40 segundos)
                     let tempoAleatorio = Math.floor(Math.random() * (40000 - 20000 + 1)) + 20000;
                     setTimeout(capturarFotoAuditoria, tempoAleatorio);
                 }
@@ -169,8 +205,8 @@
                 let nt = 0; for (let i = 0; i < m.length; i++) nt += m[i] * m[i];
                 const vol = Math.min(Math.sqrt(nt / m.length) * 800, 100);
                 document.getElementById("aBar").style.width = vol + "%";
-                if (vol > 60) {
-                    samuna("⚠️ Ruído alto!", "danger");
+                if (vol > 70) {
+                    samuna("⚠️ Ruído Alto!", "danger");
                     subtrair(2, "Ruído ambiente elevado");
                 }
             };
@@ -181,20 +217,17 @@
             const num = document.getElementById("mNtalu").value;
             if (!nome || !num) return alert("Preencha os dados primeiro!");
 
-            // Limpa a UI inicial e mostra a Prova e o Painel Flutuante
             document.getElementById("idArea").style.display = "none";
-            document.getElementById("instrucoesTxt").style.display = "none";
+            document.getElementById("instrucoesTxt").innerText = "Sessão Iniciada. O seu comportamento está a ser avaliado pela IA.";
             document.getElementById("eArea").style.display = "block";
             finalizarBtn.style.display = "block";
-            
-            // Ativa o Painel Flutuante
             painelFlutuante.style.display = "block";
 
             try {
                 const t1 = await navigator.mediaDevices.getDisplayMedia({ video: true });
                 document.getElementById("vScr").srcObject = t1;
             } catch (err) {
-                subtrair(5, "Fez a prova sem partilhar ecrã");
+                subtrair(5, "Recusou ou falhou partilha de ecrã");
             }
 
             try {
@@ -206,7 +239,12 @@
                 
                 capturarFotoAuditoria();
 
-                function luzingu() { if (kuyingila) { luseMatadi.send({image: vCam}); requestAnimationFrame(luzingu); } }
+                function luzingu() { 
+                    if (kuyingila) { 
+                        luseMatadi.send({image: vCam}); 
+                        requestAnimationFrame(luzingu); 
+                    } 
+                }
                 luzingu();
             } catch (err) { 
                 alert("Erro grave: É obrigatório permitir câmara e microfone."); location.reload(); 
@@ -214,12 +252,12 @@
         });
 
         finalizarBtn.addEventListener("click", async () => {
-            if (!confirm("Deseja finalizar a prova? O relatório e as fotografias de auditoria serão enviados.")) return;
+            if (!confirm("Deseja finalizar a prova e submeter a auditoria?")) return;
             
-            finalizarBtn.innerText = "A Processar Auditoria Visual (Aguarde)...";
+            finalizarBtn.innerText = "A Enviar (Aguarde alguns segundos)...";
             finalizarBtn.disabled = true;
             kuyingila = false;
-            painelFlutuante.style.display = "none"; // Esconde o painel ao finalizar
+            painelFlutuante.style.display = "none";
 
             const dados = {
                 nome: document.getElementById("mZina").value,
@@ -231,10 +269,10 @@
 
             try {
                 await fetch(WEBHOOK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(dados) });
-                alert("Auditoria entregue com sucesso! O Professor António receberá os dados. Pode fechar a página.");
+                alert("Relatório Entregue! A sua sessão foi registada pelo Centro de Estudo Galileu.");
                 location.reload();
             } catch (e) {
-                alert("Falha de rede ao enviar.");
+                alert("Ocorreu uma falha no envio. Contacte o Professor.");
                 finalizarBtn.disabled = false;
             }
         });
