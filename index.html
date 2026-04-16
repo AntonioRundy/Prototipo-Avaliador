@@ -2,149 +2,188 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <title>Plataforma de Avaliação - Identificação de Estudante</title>
+    <title>Plataforma de Avaliação Geofísica - Angola</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
         .container { max-width: 1100px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         
-        #identificacaoArea { background: #f8f9fa; padding: 25px; border-radius: 12px; border: 2px solid #3498db; margin-bottom: 20px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto; }
-        .campo-grupo { margin-bottom: 15px; }
+        #idArea { background: #f8f9fa; padding: 25px; border-radius: 12px; border: 2px solid #3498db; margin-bottom: 20px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .campo { margin-bottom: 15px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; color: #2c3e50; }
         input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1em; box-sizing: border-box; }
         
-        #statusBox { padding: 15px; border-radius: 8px; font-weight: bold; font-size: 1.2em; margin-bottom: 20px; min-height: 35px; transition: 0.3s; border: 2px solid transparent; }
+        #sBox { padding: 15px; border-radius: 8px; font-weight: bold; font-size: 1.2em; margin-bottom: 20px; min-height: 35px; transition: 0.3s; border: 2px solid transparent; }
         .status-normal { background-color: #dff0d8; color: #3c763d; border-color: #d6e9c6; }
         .status-danger { background-color: #f2dede; color: #c0392b; border-color: #ebccd1; }
         .status-grave { background-color: #000; color: #ff4d4d; border-color: #ff4d4d; animation: piscar 0.8s infinite; }
         @keyframes piscar { 50% { opacity: 0.5; } }
 
         .audio-monitor { margin: 15px 0; padding: 15px; background: #2c3e50; border-radius: 12px; color: white; }
-        .audio-track { width: 100%; height: 25px; background: #1a252f; border-radius: 15px; overflow: hidden; position: relative; border: 2px solid #34495e; }
-        #aBar { width: 0%; height: 100%; background: linear-gradient(90deg, #27ae60, #f1c40f, #e74c3c); transition: width 0.1s ease-out; }
+        .audio-track { width: 100%; height: 25px; background: #1a252f; border-radius: 15px; overflow: hidden; position: relative; }
+        #aBar { width: 0%; height: 100%; background: linear-gradient(90deg, #27ae60, #f1c40f, #e74c3c); transition: width 0.1s; }
 
-        #yantikaBtn { width: 100%; padding: 20px; font-size: 1.4em; font-weight: bold; color: white; background-color: #27ae60; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4); }
+        #yantikaBtn { width: 100%; padding: 20px; font-size: 1.4em; font-weight: bold; color: white; background-color: #27ae60; border: none; border-radius: 12px; cursor: pointer; }
+        #finalizarBtn { display: none; margin: 20px auto; padding: 15px 30px; background: #c0392b; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
 
-        .videos-wrapper { display: none; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
-        .video-container { position: relative; border-radius: 12px; overflow: hidden; border: 4px solid #dee2e6; background: #000; }
-        video { width: 100%; max-width: 350px; display: block; }
+        .v-wrapper { display: none; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
+        .v-cont { position: relative; border-radius: 12px; overflow: hidden; border: 4px solid #dee2e6; background: #000; width: 320px; }
+        video { width: 100%; display: block; }
         
         .exam-area { display: none; width: 100%; margin-top: 20px; border-radius: 15px; border: 3px solid #3498db; overflow: hidden; }
-        iframe { width: 100%; height: 900px; border: none; }
+        iframe { width: 100%; height: 850px; border: none; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
     <div class="container">
-        <h1>Sistema Integrado de Avaliação</h1>
-        <p>Preencha os seus dados para desbloquear o acesso ao exame.</p>
-
-        <div id="identificacaoArea">
-            <div class="campo-grupo">
-                <label>Nome Completo:</label>
-                <input type="text" id="muntuZina" placeholder="Ex: António Rundy">
-            </div>
-            <div class="campo-grupo">
-                <label>Número de Estudante:</label>
-                <input type="text" id="muntuNtalu" placeholder="Ex: 2024001">
-            </div>
+        <h1>Sistema Integrado de Avaliação Geofísica</h1>
+        
+        <div id="idArea">
+            <div class="campo"><label>Nome Completo:</label><input type="text" id="mZina"></div>
+            <div class="campo"><label>Número de Estudante:</label><input type="text" id="mNtalu"></div>
             <button id="yantikaBtn">AUTORIZAR E INICIAR EXAME</button>
         </div>
 
         <div id="sBox" class="status-normal" style="display: none;">A aguardar sensores...</div>
 
         <div class="audio-monitor" id="aArea" style="display:none;">
-            <span id="aTxt">🎤 Monitorização Acústica Ativa</span>
+            <span>🎤 Monitorização Acústica Ativa</span>
             <div class="audio-track"><div id="aBar"></div></div>
         </div>
 
-        <div class="videos-wrapper" id="vWrapper">
-            <div class="video-container" id="c1"><video id="vCam" autoplay muted playsinline></video></div>
-            <div class="video-container" id="c2"><video id="vScr" autoplay muted playsinline></video></div>
+        <div class="v-wrapper" id="vWrapper">
+            <div class="v-cont"><video id="vCam" autoplay muted playsinline></video></div>
+            <div class="v-cont"><video id="vScr" autoplay muted playsinline></video></div>
         </div>
 
         <div class="exam-area" id="eArea">
-            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeyDMAP2o-ibGcw386HSH0RvzCip3IsAu2wZQq1IQUvMot8GQ/viewform?embedded=true">Carregando prova...</iframe>
+            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeyDMAP2o-ibGcw386HSH0RvzCip3IsAu2wZQq1IQUvMot8GQ/viewform?embedded=true"></iframe>
         </div>
+
+        <button id="finalizarBtn">FINALIZAR EXAME E ENVIAR RELATÓRIO</button>
     </div>
 
     <script>
+        // CONFIGURAÇÕES DO PROFESSOR
+        const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbw_yjPtk7tSXia4jhxigrSt8S9eFAlfncHfZVaRDh4wZnyYTdtTzSV7yeWULycEHw8/exec";
+        
         const vCam = document.getElementById("vCam");
-        const vScr = document.getElementById("vScr");
         const sBox = document.getElementById("sBox");
         const aBar = document.getElementById("aBar");
         const yantikaBtn = document.getElementById("yantikaBtn");
-        const eArea = document.getElementById("eArea");
-        const idArea = document.getElementById("identificacaoArea");
-        const muntuZina = document.getElementById("muntuZina");
-        const muntuNtalu = document.getElementById("muntuNtalu");
-
-        let kuyingila = false; 
+        const finalizarBtn = document.getElementById("finalizarBtn");
+        
+        let kuyingila = false;
+        let confianca = 100;
+        let infrações = [];
         let mazuNza;
 
         const luseMatadi = new FaceMesh({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`});
-        luseMatadi.setOptions({ maxNumFaces: 2, refineLandmarks: true, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
+        luseMatadi.setOptions({ maxNumFaces: 2, refineLandmarks: true, minDetectionConfidence: 0.6 });
 
         luseMatadi.onResults((bima) => {
             if (!kuyingila) return;
             if (!bima.multiFaceLandmarks || bima.multiFaceLandmarks.length === 0) {
-                samuna("⚠️ ALERTA: Estudante não detetado!", "grave");
+                samuna("⚠️ ALERTA: Estudante ausente!", "grave");
+                subtrair(0.5, "Ausência detectada");
             } else if (bima.multiFaceLandmarks.length > 1) {
-                samuna("⚠️ VIOLAÇÃO: Múltiplas pessoas detetadas!", "grave");
+                samuna("⚠️ VIOLAÇÃO: Múltiplas pessoas!", "grave");
+                subtrair(2, "Presença de terceiros");
             } else {
-                const muntu = bima.multiFaceLandmarks[0];
-                const disu = muntu[473]; 
-                const nwaZibula = Math.abs(muntu[14].y - muntu[13].y);
-                const nzilaMeso = (disu.x - muntu[362].x) / (muntu[263].x - muntu[362].x);
+                const m = bima.multiFaceLandmarks[0];
+                const nwaZ = Math.abs(m[14].y - m[13].y);
+                const nzMeso = (m[473].x - m[362].x) / (m[263].x - m[362].x);
 
-                if (nwaZibula > 0.055) samuna("⚠️ ALERTA: Movimento labial detetado!", "danger");
-                else if (nzilaMeso < 0.38 || nzilaMeso > 0.62) samuna("⚠️ ALERTA: Olhar desviado!", "danger");
-                else samuna("✅ Status: Monitorização Segura", "normal");
+                if (nwaZ > 0.055) {
+                    samuna("⚠️ ALERTA: Conversa detectada!", "danger");
+                    subtrair(0.1, "Movimento labial/fala");
+                } else if (nzMeso < 0.35 || nzMeso > 0.65) {
+                    samuna("⚠️ ALERTA: Olhar desviado!", "danger");
+                    subtrair(0.05, "Desvio de olhar");
+                } else {
+                    if (sBox.className !== "status-danger") samuna("✅ Status: Monitorização Segura", "normal");
+                }
             }
         });
+
+        function subtrair(pts, motivo) {
+            confianca = Math.max(0, confianca - pts);
+            if (!infrações.includes(motivo)) infrações.push(motivo);
+        }
 
         async function wunikina(s) {
             mazuNza = new (window.AudioContext || window.webkitAudioContext)();
             const nto = mazuNza.createMediaStreamSource(s);
-            const fimpulula = mazuNza.createScriptProcessor(2048, 1, 1);
-            nto.connect(fimpulula); fimpulula.connect(mazuNza.destination);
-            fimpulula.onaudioprocess = (e) => {
-                const mazu = e.inputBuffer.getChannelData(0);
-                let ntalu = 0; for (let i = 0; i < mazu.length; i++) ntalu += mazu[i] * mazu[i];
-                const tezo = Math.min(Math.sqrt(ntalu / mazu.length) * 500, 100);
-                aBar.style.width = tezo + "%";
-                if (tezo > 65) samuna("⚠️ ALERTA: Ruído excessivo!", "danger");
+            const fimp = mazuNza.createScriptProcessor(2048, 1, 1);
+            nto.connect(fimp); fimp.connect(mazuNza.destination);
+            fimp.onaudioprocess = (e) => {
+                const m = e.inputBuffer.getChannelData(0);
+                let nt = 0; for (let i = 0; i < m.length; i++) nt += m[i] * m[i];
+                const vol = Math.min(Math.sqrt(nt / m.length) * 500, 100);
+                aBar.style.width = vol + "%";
+                if (vol > 70) {
+                    samuna("⚠️ ALERTA: Ruído alto!", "danger");
+                    subtrair(0.2, "Ruído ambiente elevado");
+                }
             };
         }
 
         yantikaBtn.addEventListener("click", async () => {
-            if (muntuZina.value.trim() === "" || muntuNtalu.value.trim() === "") {
-                alert("Por favor, preencha o seu Nome e Número antes de iniciar.");
-                return;
-            }
+            const nome = document.getElementById("mZina").value;
+            const num = document.getElementById("mNtalu").value;
+            if (!nome || !num) return alert("Preencha os dados primeiro!");
 
-            idArea.style.display = "none";
+            document.getElementById("idArea").style.display = "none";
             document.getElementById("aArea").style.display = "block";
             document.getElementById("vWrapper").style.display = "flex";
+            document.getElementById("eArea").style.display = "block";
             sBox.style.display = "block";
+            finalizarBtn.style.display = "block";
 
             try {
                 const t1 = await navigator.mediaDevices.getDisplayMedia({ video: true });
-                vScr.srcObject = t1;
+                document.getElementById("vScr").srcObject = t1;
                 const t2 = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 vCam.srcObject = t2;
-                if (mazuNza) await mazuNza.resume();
                 await wunikina(t2);
                 await luseMatadi.initialize();
                 kuyingila = true;
-                eArea.style.display = "block";
                 function luzingu() { if (kuyingila) { luseMatadi.send({image: vCam}); requestAnimationFrame(luzingu); } }
                 luzingu();
-            } catch (err) { alert("Erro ao ativar sensores."); location.reload(); }
+            } catch (err) { alert("Erro nos sensores."); location.reload(); }
         });
 
-        function samuna(ndinga, mpila) {
-            sBox.innerText = ndinga; sBox.className = "status-" + mpila;
+        finalizarBtn.addEventListener("click", async () => {
+            if (!confirm("Deseja finalizar a prova e enviar o relatório de integridade?")) return;
+            
+            finalizarBtn.innerText = "A enviar relatório...";
+            finalizarBtn.disabled = true;
+
+            const dados = {
+                nome: document.getElementById("mZina").value,
+                numero: document.getElementById("mNtalu").value,
+                confianca: Math.round(confianca),
+                observacoes: infrações.length > 0 ? infrações.join(", ") : "Nenhuma infração detectada"
+            };
+
+            try {
+                await fetch(WEBHOOK_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    body: JSON.stringify(dados)
+                });
+                alert("Relatório enviado com sucesso! Pode fechar a página.");
+                location.reload();
+            } catch (e) {
+                alert("Erro ao enviar relatório. Tente novamente.");
+                finalizarBtn.disabled = false;
+            }
+        });
+
+        function samuna(msg, tipo) {
+            sBox.innerText = msg + " (Confiança: " + Math.round(confianca) + "%)";
+            sBox.className = "status-" + tipo;
         }
     </script>
 </body>
