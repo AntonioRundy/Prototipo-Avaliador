@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <title>Plataforma de Avaliação Geofísica - Angola</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
-        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; text-align: center; display: flex; flex-direction: column; min-height: 95vh; }
+        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); flex-grow: 1; width: 100%; box-sizing: border-box; }
         
         #idArea { background: #f8f9fa; padding: 25px; border-radius: 12px; border: 2px solid #3498db; margin-bottom: 20px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto; }
         .campo { margin-bottom: 15px; }
@@ -31,6 +31,10 @@
         
         .exam-area { display: none; width: 100%; margin-top: 20px; border-radius: 15px; border: 3px solid #3498db; overflow: hidden; }
         iframe { width: 100%; height: 850px; border: none; }
+
+        /* Rodapé Institucional */
+        .rodape { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #7f8c8d; font-size: 0.95em; }
+        .rodape strong { color: #2c3e50; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
 </head>
@@ -54,7 +58,7 @@
 
         <div class="v-wrapper" id="vWrapper">
             <div class="v-cont"><video id="vCam" autoplay muted playsinline></video></div>
-            <div class="v-cont"><video id="vScr" autoplay muted playsinline></video></div>
+            <div class="v-cont" id="scrCont"><video id="vScr" autoplay muted playsinline></video></div>
         </div>
 
         <div class="exam-area" id="eArea">
@@ -64,9 +68,12 @@
         <button id="finalizarBtn">FINALIZAR EXAME E ENVIAR RELATÓRIO</button>
     </div>
 
+    <div class="rodape">
+        Desenvolvido pelo <strong>Centro de Estudo Galileu</strong> | Plataforma de Avaliação Soberana © 2026
+    </div>
+
     <script>
-        // CONFIGURAÇÕES DO PROFESSOR
-        const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbw_yjPtk7tSXia4jhxigrSt8S9eFAlfncHfZVaRDh4wZnyYTdtTzSV7yeWULycEHw8/exec";
+        const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycby9YtOYTxPs8ByiUZdngikkNHxwnvZlKyD-til8XDzIRfgV--8J_SeevIAS2OpJJKo/exec";
         
         const vCam = document.getElementById("vCam");
         const sBox = document.getElementById("sBox");
@@ -78,6 +85,14 @@
         let confianca = 100;
         let infrações = [];
         let mazuNza;
+
+        // Deteção de Troca de Aba/Navegador (Anti-Cheat)
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden && kuyingila) {
+                samuna("⚠️ ALERTA: Troca de aba ou janela detetada!", "grave");
+                subtrair(15, "Abriu outra aba/programa durante a prova");
+            }
+        });
 
         const luseMatadi = new FaceMesh({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`});
         luseMatadi.setOptions({ maxNumFaces: 2, refineLandmarks: true, minDetectionConfidence: 0.6 });
@@ -102,7 +117,7 @@
                     samuna("⚠️ ALERTA: Olhar desviado!", "danger");
                     subtrair(0.05, "Desvio de olhar");
                 } else {
-                    if (sBox.className !== "status-danger") samuna("✅ Status: Monitorização Segura", "normal");
+                    if (sBox.className !== "status-danger" && sBox.className !== "status-grave") samuna("✅ Status: Monitorização Segura", "normal");
                 }
             }
         });
@@ -141,9 +156,19 @@
             sBox.style.display = "block";
             finalizarBtn.style.display = "block";
 
+            // Tentativa de Partilha de Ecrã (PC)
             try {
                 const t1 = await navigator.mediaDevices.getDisplayMedia({ video: true });
                 document.getElementById("vScr").srcObject = t1;
+            } catch (err) {
+                // Se falhar (ex: Telemóvel), avisa mas deixa continuar
+                document.getElementById("scrCont").style.display = "none";
+                alert("Aviso: A partilha de ecrã não está disponível neste dispositivo. A monitorização será feita apenas por câmara e microfone.");
+                infrações.push("Uso de dispositivo sem partilha de ecrã (Mobile/Bloqueado)");
+            }
+
+            // Ativação da Câmara e Microfone (PC e Telemóvel)
+            try {
                 const t2 = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 vCam.srcObject = t2;
                 await wunikina(t2);
@@ -151,7 +176,10 @@
                 kuyingila = true;
                 function luzingu() { if (kuyingila) { luseMatadi.send({image: vCam}); requestAnimationFrame(luzingu); } }
                 luzingu();
-            } catch (err) { alert("Erro nos sensores."); location.reload(); }
+            } catch (err) { 
+                alert("Erro grave: É obrigatório permitir o acesso à câmara e ao microfone para realizar o exame."); 
+                location.reload(); 
+            }
         });
 
         finalizarBtn.addEventListener("click", async () => {
@@ -159,24 +187,21 @@
             
             finalizarBtn.innerText = "A enviar relatório...";
             finalizarBtn.disabled = true;
+            kuyingila = false; // Pára a monitorização
 
             const dados = {
                 nome: document.getElementById("mZina").value,
                 numero: document.getElementById("mNtalu").value,
                 confianca: Math.round(confianca),
-                observacoes: infrações.length > 0 ? infrações.join(", ") : "Nenhuma infração detectada"
+                observacoes: infrações.length > 0 ? infrações.join(" | ") : "Nenhuma infração detetada"
             };
 
             try {
-                await fetch(WEBHOOK_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    body: JSON.stringify(dados)
-                });
+                await fetch(WEBHOOK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(dados) });
                 alert("Relatório enviado com sucesso! Pode fechar a página.");
                 location.reload();
             } catch (e) {
-                alert("Erro ao enviar relatório. Tente novamente.");
+                alert("Erro ao enviar relatório. Verifique a sua ligação.");
                 finalizarBtn.disabled = false;
             }
         });
