@@ -5,34 +5,51 @@
     <title>Plataforma de Avaliação Geofísica - Angola</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; text-align: center; display: flex; flex-direction: column; min-height: 95vh; }
-        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); flex-grow: 1; width: 100%; box-sizing: border-box; }
+        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); flex-grow: 1; position: relative; }
         
         #idArea { background: #f8f9fa; padding: 25px; border-radius: 12px; border: 2px solid #3498db; margin-bottom: 20px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto; }
         .campo { margin-bottom: 15px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; color: #2c3e50; }
         input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1em; box-sizing: border-box; }
         
-        #sBox { padding: 15px; border-radius: 8px; font-weight: bold; font-size: 1.2em; margin-bottom: 20px; min-height: 35px; transition: 0.3s; border: 2px solid transparent; }
+        #yantikaBtn { width: 100%; padding: 20px; font-size: 1.4em; font-weight: bold; color: white; background-color: #27ae60; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3); transition: 0.3s; }
+        #yantikaBtn:hover { background-color: #219653; transform: translateY(-2px); }
+        
+        #finalizarBtn { display: none; margin: 30px auto 10px auto; padding: 15px 40px; background: #c0392b; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.2em; box-shadow: 0 4px 15px rgba(192, 57, 43, 0.4); }
+
+        /* O NOVO PAINEL FLUTUANTE */
+        #painelFlutuante {
+            display: none; /* Escondido até iniciar */
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 250px;
+            background: rgba(255, 255, 255, 0.98);
+            border: 3px solid #2c3e50;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            z-index: 9999;
+            text-align: center;
+        }
+        
+        #painelFlutuante video { width: 100%; border-radius: 8px; border: 2px solid #bdc3c7; margin: 10px 0; background: #000; }
+        
+        #placarConfianca { font-size: 1.3em; font-weight: bold; color: #27ae60; padding: 8px; border-radius: 6px; background: #eaeded; border: 2px solid #27ae60; transition: 0.3s; margin-bottom: 10px; }
+        
+        #sBox { font-size: 0.95em; padding: 10px; border-radius: 6px; font-weight: bold; min-height: 45px; display: flex; align-items: center; justify-content: center; transition: 0.3s; border: 2px solid transparent; }
+        
         .status-normal { background-color: #dff0d8; color: #3c763d; border-color: #d6e9c6; }
         .status-danger { background-color: #f2dede; color: #c0392b; border-color: #ebccd1; }
         .status-grave { background-color: #000; color: #ff4d4d; border-color: #ff4d4d; animation: piscar 0.8s infinite; }
         @keyframes piscar { 50% { opacity: 0.5; } }
 
-        .audio-monitor { margin: 15px 0; padding: 15px; background: #2c3e50; border-radius: 12px; color: white; }
-        .audio-track { width: 100%; height: 25px; background: #1a252f; border-radius: 15px; overflow: hidden; position: relative; }
+        .audio-track { width: 100%; height: 15px; background: #ecf0f1; border-radius: 8px; overflow: hidden; position: relative; margin-top: 10px; border: 1px solid #bdc3c7; }
         #aBar { width: 0%; height: 100%; background: linear-gradient(90deg, #27ae60, #f1c40f, #e74c3c); transition: width 0.1s; }
 
-        #yantikaBtn { width: 100%; padding: 20px; font-size: 1.4em; font-weight: bold; color: white; background-color: #27ae60; border: none; border-radius: 12px; cursor: pointer; }
-        #finalizarBtn { display: none; margin: 20px auto; padding: 15px 30px; background: #c0392b; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-
-        .v-wrapper { display: none; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
-        .v-cont { position: relative; border-radius: 12px; overflow: hidden; border: 4px solid #dee2e6; background: #000; width: 320px; }
-        video { width: 100%; display: block; }
-        
-        .exam-area { display: none; width: 100%; margin-top: 20px; border-radius: 15px; border: 3px solid #3498db; overflow: hidden; }
+        .exam-area { display: none; width: 100%; margin-top: 10px; border-radius: 15px; border: 3px solid #3498db; overflow: hidden; background: white; }
         iframe { width: 100%; height: 850px; border: none; }
 
-        /* Rodapé Institucional */
         .rodape { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #7f8c8d; font-size: 0.95em; }
         .rodape strong { color: #2c3e50; }
     </style>
@@ -42,6 +59,7 @@
 
     <div class="container">
         <h1>Sistema Integrado de Avaliação Geofísica</h1>
+        <p id="instrucoesTxt">Preencha os seus dados para desbloquear a prova.</p>
         
         <div id="idArea">
             <div class="campo"><label>Nome Completo:</label><input type="text" id="mZina"></div>
@@ -49,17 +67,15 @@
             <button id="yantikaBtn">AUTORIZAR E INICIAR EXAME</button>
         </div>
 
-        <div id="sBox" class="status-normal" style="display: none;">A aguardar sensores...</div>
-
-        <div class="audio-monitor" id="aArea" style="display:none;">
-            <span>🎤 Monitorização Acústica Ativa</span>
+        <div id="painelFlutuante">
+            <div id="placarConfianca">Integridade: 100%</div>
+            <div id="sBox" class="status-normal">A aguardar câmara...</div>
+            <video id="vCam" autoplay muted playsinline></video>
+            <div style="font-size: 0.8em; color: #7f8c8d; font-weight: bold;">🎤 Som</div>
             <div class="audio-track"><div id="aBar"></div></div>
         </div>
 
-        <div class="v-wrapper" id="vWrapper">
-            <div class="v-cont"><video id="vCam" autoplay muted playsinline></video></div>
-            <div class="v-cont" id="scrCont"><video id="vScr" autoplay muted playsinline></video></div>
-        </div>
+        <video id="vScr" autoplay muted playsinline style="display:none;"></video>
 
         <div class="exam-area" id="eArea">
             <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeyDMAP2o-ibGcw386HSH0RvzCip3IsAu2wZQq1IQUvMot8GQ/viewform?embedded=true"></iframe>
@@ -68,63 +84,79 @@
         <button id="finalizarBtn">FINALIZAR EXAME E ENVIAR RELATÓRIO</button>
     </div>
 
-    <div class="rodape">
-        Desenvolvido pelo <strong>Centro de Estudo Galileu</strong> | Plataforma de Avaliação Soberana © 2026
-    </div>
+    <div class="rodape">Desenvolvido pelo <strong>Centro de Estudo Galileu</strong> | Plataforma de Avaliação Soberana © 2026</div>
 
     <script>
         const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycby9YtOYTxPs8ByiUZdngikkNHxwnvZlKyD-til8XDzIRfgV--8J_SeevIAS2OpJJKo/exec";
         
         const vCam = document.getElementById("vCam");
         const sBox = document.getElementById("sBox");
-        const aBar = document.getElementById("aBar");
-        const yantikaBtn = document.getElementById("yantikaBtn");
+        const placar = document.getElementById("placarConfianca");
         const finalizarBtn = document.getElementById("finalizarBtn");
+        const painelFlutuante = document.getElementById("painelFlutuante");
         
         let kuyingila = false;
         let confianca = 100;
         let infrações = [];
         let mazuNza;
+        let galeriaFotos = [];
 
-        // Deteção de Troca de Aba/Navegador (Anti-Cheat)
         document.addEventListener("visibilitychange", () => {
             if (document.hidden && kuyingila) {
-                samuna("⚠️ ALERTA: Troca de aba ou janela detetada!", "grave");
-                subtrair(15, "Abriu outra aba/programa durante a prova");
+                samuna("⚠️ GRAVE: Saiu da aba!", "grave");
+                subtrair(20, "Mudança de Aba/Janela detetada");
             }
         });
 
         const luseMatadi = new FaceMesh({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`});
-        luseMatadi.setOptions({ maxNumFaces: 2, refineLandmarks: true, minDetectionConfidence: 0.6 });
+        luseMatadi.setOptions({ maxNumFaces: 2, refineLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
 
         luseMatadi.onResults((bima) => {
             if (!kuyingila) return;
             if (!bima.multiFaceLandmarks || bima.multiFaceLandmarks.length === 0) {
-                samuna("⚠️ ALERTA: Estudante ausente!", "grave");
-                subtrair(0.5, "Ausência detectada");
+                samuna("⚠️ Ausência detetada!", "grave");
+                subtrair(2, "Ausência da câmara");
             } else if (bima.multiFaceLandmarks.length > 1) {
-                samuna("⚠️ VIOLAÇÃO: Múltiplas pessoas!", "grave");
-                subtrair(2, "Presença de terceiros");
+                samuna("⚠️ Múltiplas pessoas!", "grave");
+                subtrair(10, "Presença de terceiros");
             } else {
                 const m = bima.multiFaceLandmarks[0];
                 const nwaZ = Math.abs(m[14].y - m[13].y);
                 const nzMeso = (m[473].x - m[362].x) / (m[263].x - m[362].x);
 
-                if (nwaZ > 0.055) {
-                    samuna("⚠️ ALERTA: Conversa detectada!", "danger");
-                    subtrair(0.1, "Movimento labial/fala");
-                } else if (nzMeso < 0.35 || nzMeso > 0.65) {
-                    samuna("⚠️ ALERTA: Olhar desviado!", "danger");
-                    subtrair(0.05, "Desvio de olhar");
+                if (nwaZ > 0.05) {
+                    samuna("⚠️ Movimento labial!", "danger");
+                    subtrair(1, "Suspeita de fala");
+                } else if (nzMeso < 0.40 || nzMeso > 0.60) {
+                    samuna("⚠️ Olhar desviado!", "danger");
+                    subtrair(0.5, "Desvio de olhar");
                 } else {
-                    if (sBox.className !== "status-danger" && sBox.className !== "status-grave") samuna("✅ Status: Monitorização Segura", "normal");
+                    if (sBox.className !== "status-danger" && sBox.className !== "status-grave") samuna("✅ Monitorização Segura", "normal");
                 }
             }
         });
 
+        function capturarFotoAuditoria() {
+            if (galeriaFotos.length < 4 && vCam.readyState === 4 && kuyingila) {
+                const canvas = document.createElement("canvas");
+                canvas.width = 640; canvas.height = 480;
+                canvas.getContext("2d").drawImage(vCam, 0, 0, 640, 480);
+                galeriaFotos.push(canvas.toDataURL("image/jpeg", 0.4));
+                
+                if(galeriaFotos.length < 4) {
+                    let tempoAleatorio = Math.floor(Math.random() * (40000 - 20000 + 1)) + 20000;
+                    setTimeout(capturarFotoAuditoria, tempoAleatorio);
+                }
+            }
+        }
+
         function subtrair(pts, motivo) {
             confianca = Math.max(0, confianca - pts);
             if (!infrações.includes(motivo)) infrações.push(motivo);
+            
+            placar.innerText = "Integridade: " + Math.round(confianca) + "%";
+            if(confianca < 70) { placar.style.color = "#c0392b"; placar.style.borderColor = "#c0392b"; }
+            else if(confianca < 90) { placar.style.color = "#f39c12"; placar.style.borderColor = "#f39c12"; }
         }
 
         async function wunikina(s) {
@@ -135,79 +167,80 @@
             fimp.onaudioprocess = (e) => {
                 const m = e.inputBuffer.getChannelData(0);
                 let nt = 0; for (let i = 0; i < m.length; i++) nt += m[i] * m[i];
-                const vol = Math.min(Math.sqrt(nt / m.length) * 500, 100);
-                aBar.style.width = vol + "%";
-                if (vol > 70) {
-                    samuna("⚠️ ALERTA: Ruído alto!", "danger");
-                    subtrair(0.2, "Ruído ambiente elevado");
+                const vol = Math.min(Math.sqrt(nt / m.length) * 800, 100);
+                document.getElementById("aBar").style.width = vol + "%";
+                if (vol > 60) {
+                    samuna("⚠️ Ruído alto!", "danger");
+                    subtrair(2, "Ruído ambiente elevado");
                 }
             };
         }
 
-        yantikaBtn.addEventListener("click", async () => {
+        document.getElementById("yantikaBtn").addEventListener("click", async () => {
             const nome = document.getElementById("mZina").value;
             const num = document.getElementById("mNtalu").value;
             if (!nome || !num) return alert("Preencha os dados primeiro!");
 
+            // Limpa a UI inicial e mostra a Prova e o Painel Flutuante
             document.getElementById("idArea").style.display = "none";
-            document.getElementById("aArea").style.display = "block";
-            document.getElementById("vWrapper").style.display = "flex";
+            document.getElementById("instrucoesTxt").style.display = "none";
             document.getElementById("eArea").style.display = "block";
-            sBox.style.display = "block";
             finalizarBtn.style.display = "block";
+            
+            // Ativa o Painel Flutuante
+            painelFlutuante.style.display = "block";
 
-            // Tentativa de Partilha de Ecrã (PC)
             try {
                 const t1 = await navigator.mediaDevices.getDisplayMedia({ video: true });
                 document.getElementById("vScr").srcObject = t1;
             } catch (err) {
-                // Se falhar (ex: Telemóvel), avisa mas deixa continuar
-                document.getElementById("scrCont").style.display = "none";
-                alert("Aviso: A partilha de ecrã não está disponível neste dispositivo. A monitorização será feita apenas por câmara e microfone.");
-                infrações.push("Uso de dispositivo sem partilha de ecrã (Mobile/Bloqueado)");
+                subtrair(5, "Fez a prova sem partilhar ecrã");
             }
 
-            // Ativação da Câmara e Microfone (PC e Telemóvel)
             try {
                 const t2 = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 vCam.srcObject = t2;
                 await wunikina(t2);
                 await luseMatadi.initialize();
                 kuyingila = true;
+                
+                capturarFotoAuditoria();
+
                 function luzingu() { if (kuyingila) { luseMatadi.send({image: vCam}); requestAnimationFrame(luzingu); } }
                 luzingu();
             } catch (err) { 
-                alert("Erro grave: É obrigatório permitir o acesso à câmara e ao microfone para realizar o exame."); 
-                location.reload(); 
+                alert("Erro grave: É obrigatório permitir câmara e microfone."); location.reload(); 
             }
         });
 
         finalizarBtn.addEventListener("click", async () => {
-            if (!confirm("Deseja finalizar a prova e enviar o relatório de integridade?")) return;
+            if (!confirm("Deseja finalizar a prova? O relatório e as fotografias de auditoria serão enviados.")) return;
             
-            finalizarBtn.innerText = "A enviar relatório...";
+            finalizarBtn.innerText = "A Processar Auditoria Visual (Aguarde)...";
             finalizarBtn.disabled = true;
-            kuyingila = false; // Pára a monitorização
+            kuyingila = false;
+            painelFlutuante.style.display = "none"; // Esconde o painel ao finalizar
 
             const dados = {
                 nome: document.getElementById("mZina").value,
                 numero: document.getElementById("mNtalu").value,
                 confianca: Math.round(confianca),
-                observacoes: infrações.length > 0 ? infrações.join(" | ") : "Nenhuma infração detetada"
+                observacoes: infrações.length > 0 ? infrações.join(" | ") : "Nenhuma infração detetada",
+                fotos: galeriaFotos
             };
 
             try {
                 await fetch(WEBHOOK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(dados) });
-                alert("Relatório enviado com sucesso! Pode fechar a página.");
+                alert("Auditoria entregue com sucesso! O Professor António receberá os dados. Pode fechar a página.");
                 location.reload();
             } catch (e) {
-                alert("Erro ao enviar relatório. Verifique a sua ligação.");
+                alert("Falha de rede ao enviar.");
                 finalizarBtn.disabled = false;
             }
         });
 
         function samuna(msg, tipo) {
-            sBox.innerText = msg + " (Confiança: " + Math.round(confianca) + "%)";
+            sBox.innerText = msg;
             sBox.className = "status-" + tipo;
         }
     </script>
