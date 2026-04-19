@@ -1,160 +1,1354 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProctorAI — Sistema de Vigilância de Exames</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0c10;
+    --bg2: #0f1318;
+    --bg3: #151a22;
+    --bg4: #1c2330;
+    --border: rgba(99,179,237,0.12);
+    --border2: rgba(99,179,237,0.25);
+    --blue: #63b3ed;
+    --blue2: #90cdf4;
+    --green: #68d391;
+    --green2: #9ae6b4;
+    --red: #fc8181;
+    --red2: #feb2b2;
+    --yellow: #f6e05e;
+    --yellow2: #faf089;
+    --gray: #718096;
+    --gray2: #a0aec0;
+    --white: #f7fafc;
+    --text: #e2e8f0;
+    --text2: #a0aec0;
+    --radius: 10px;
+    --radius2: 16px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --glow-blue: 0 0 20px rgba(99,179,237,0.15);
+    --glow-green: 0 0 20px rgba(104,211,145,0.15);
+    --glow-red: 0 0 20px rgba(252,129,129,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── GRID DE FUNDO ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(99,179,237,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99,179,237,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,12,16,0.95);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--blue), #4299e1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: var(--glow-blue);
+  }
+
+  .logo h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--white);
+  }
+
+  .logo span { color: var(--blue); }
+
+  .header-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gray);
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+
+  .pulse-dot.active {
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse-anim 1.5s infinite;
+  }
+
+  @keyframes pulse-anim {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ── MAIN LAYOUT ── */
+  main {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  /* ── TELA DE LOGIN ── */
+  #loginScreen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 73px);
+    padding: 32px 24px;
+  }
+
+  .login-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius2);
+    padding: 48px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: var(--shadow);
+  }
+
+  .login-card h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .login-card p {
+    font-size: 14px;
+    color: var(--text2);
+    margin-bottom: 32px;
+    line-height: 1.6;
+  }
+
+  .consent-box {
+    background: rgba(252,129,129,0.06);
+    border: 1px solid rgba(252,129,129,0.2);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 24px;
+    font-size: 12.5px;
+    color: var(--red);
+    line-height: 1.6;
+  }
+
+  .consent-box strong { color: var(--red2); }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    color: var(--white);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 20px;
+  }
+
+  input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(99,179,237,0.1);
+  }
+
+  .consent-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .consent-check input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--blue);
+  }
+
+  .consent-check span {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #4299e1, #63b3ed);
+    border: none;
+    border-radius: var(--radius);
+    color: white;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    box-shadow: var(--glow-blue);
+  }
+
+  .btn-primary:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+  .btn-primary:active { transform: scale(0.99); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .btn-danger {
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #c53030, #e53e3e);
+    border: none;
+    border-radius: var(--radius);
+    color: white;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    box-shadow: var(--glow-red);
+  }
+
+  .btn-danger:hover { opacity: 0.9; }
+  .btn-danger:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── TELA DE EXAME ── */
+  #examScreen {
+    display: none;
+  }
+
+  .exam-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    grid-template-rows: auto 1fr;
+    gap: 20px;
+    min-height: calc(100vh - 140px);
+  }
+
+  /* ── PAINEL DE VÍDEO ── */
+  .video-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .panel-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .video-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 16px;
+    flex: 1;
+  }
+
+  .video-wrapper {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: #000;
+    aspect-ratio: 16/9;
+    border: 1px solid var(--border);
+  }
+
+  .video-wrapper video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .video-label {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(4px);
+    border-radius: 5px;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--blue2);
+    border: 1px solid var(--border);
+  }
+
+  .video-rec {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(0,0,0,0.75);
+    border-radius: 5px;
+    padding: 3px 8px;
+    font-size: 11px;
+    color: var(--red);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .rec-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--red);
+    animation: pulse-anim 1s infinite;
+  }
+
+  /* ── PAINEL DIREITO ── */
+  .right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ── SCORE CARD ── */
+  .score-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius2);
+    padding: 20px;
+  }
+
+  .score-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .score-value {
+    font-size: 48px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1;
+    transition: color 0.5s;
+  }
+
+  .score-value.high { color: var(--green); text-shadow: var(--glow-green); }
+  .score-value.mid { color: var(--yellow); }
+  .score-value.low { color: var(--red); text-shadow: var(--glow-red); }
+
+  .score-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+
+  .score-bar-track {
+    width: 100%;
+    height: 6px;
+    background: var(--bg4);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease, background 0.5s ease;
+    background: var(--green);
+  }
+
+  /* ── STATUS CARD ── */
+  .status-card {
+    background: var(--bg3);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.3s, border 0.3s;
+    border: 1px solid transparent;
+  }
+
+  .status-card.ok { background: rgba(104,211,145,0.06); border-color: rgba(104,211,145,0.2); }
+  .status-card.warn { background: rgba(246,224,94,0.06); border-color: rgba(246,224,94,0.2); }
+  .status-card.danger { background: rgba(252,129,129,0.08); border-color: rgba(252,129,129,0.25); }
+
+  .status-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    width: 28px;
+    text-align: center;
+  }
+
+  .status-text {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .status-card.ok .status-text { color: var(--green2); }
+  .status-card.warn .status-text { color: var(--yellow2); }
+  .status-card.danger .status-text { color: var(--red2); }
+
+  /* ── AUDIO BAR ── */
+  .audio-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius2);
+    padding: 16px 20px;
+  }
+
+  .audio-bar-track {
+    width: 100%;
+    height: 8px;
+    background: var(--bg4);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+
+  #aBar {
+    height: 100%;
+    width: 0%;
+    border-radius: 4px;
+    background: var(--green);
+    transition: width 0.1s, background 0.2s;
+  }
+
+  /* ── IA ANOTAÇÕES ── */
+  .ia-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius2);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .ia-chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 280px;
+    min-height: 160px;
+  }
+
+  .ia-chat::-webkit-scrollbar { width: 4px; }
+  .ia-chat::-webkit-scrollbar-track { background: transparent; }
+  .ia-chat::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .ia-msg {
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--text2);
+    border-left: 2px solid var(--blue);
+    padding-left: 10px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .ia-msg.event { border-color: var(--red); color: var(--red2); }
+  .ia-msg.system { border-color: var(--gray); color: var(--gray2); font-style: italic; }
+  .ia-msg strong { color: var(--blue2); font-weight: 600; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .ia-input-area {
+    padding: 12px 14px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+  }
+
+  .ia-input-area input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 13px;
+    font-size: 13px;
+    color: var(--white);
+    font-family: 'Space Grotesk', sans-serif;
+    outline: none;
+    margin: 0;
+    transition: border-color 0.2s;
+  }
+
+  .ia-input-area input:focus { border-color: var(--blue); }
+
+  .ia-send-btn {
+    padding: 8px 14px;
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--blue);
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+
+  .ia-send-btn:hover { background: rgba(99,179,237,0.1); }
+  .ia-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── INFRAÇÕES ── */
+  .infracoes-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius2);
+    padding: 16px 20px;
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .infracoes-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex: 1;
+    min-height: 28px;
+  }
+
+  .infra-tag {
+    background: rgba(252,129,129,0.1);
+    border: 1px solid rgba(252,129,129,0.25);
+    border-radius: 5px;
+    padding: 3px 10px;
+    font-size: 11.5px;
+    color: var(--red2);
+    font-family: 'JetBrains Mono', monospace;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .no-infra {
+    font-size: 12px;
+    color: var(--gray);
+    font-style: italic;
+  }
+
+  /* ── SPINNER ── */
+  .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(99,179,237,0.2);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 12px 20px;
+    font-size: 13px;
+    color: var(--text);
+    z-index: 1000;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    max-width: 320px;
+  }
+
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast.success { border-color: rgba(104,211,145,0.4); color: var(--green2); }
+  #toast.error { border-color: rgba(252,129,129,0.4); color: var(--red2); }
+
+  /* ── TIMER ── */
+  #sessionTimer {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  .student-badge {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--blue2);
+    font-weight: 500;
+  }
+
+  /* ── RESPONSIVO ── */
+  @media (max-width: 900px) {
+    .exam-grid {
+      grid-template-columns: 1fr;
+    }
+    .right-column {
+      order: -1;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🛡️</div>
+    <div>
+      <h1>Proctor<span>AI</span></h1>
+    </div>
+  </div>
+  <div class="header-status">
+    <div class="pulse-dot" id="headerDot"></div>
+    <span id="headerStatusText">Sistema Pronto</span>
+    <span id="sessionTimer" style="display:none; margin-left:16px; opacity:0.6;"></span>
+  </div>
+</header>
+
+<!-- ══════════ LOGIN ══════════ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <h2>Iniciar Sessão de Exame</h2>
+    <p>Preencha os seus dados para começar. A sessão será monitorizada por Inteligência Artificial em conformidade com as normas de integridade académica.</p>
+
+    <div class="consent-box">
+      <strong>⚠️ Aviso de Privacidade:</strong> Esta sessão captura vídeo, áudio e fotografias periódicas para fins de auditoria académica. Os dados são processados automaticamente e enviados ao supervisor responsável.
+    </div>
+
+    <label>Nome Completo</label>
+    <input type="text" id="mZina" placeholder="Ex: Sandra Neto" autocomplete="off">
+
+    <label>Número de Estudante</label>
+    <input type="text" id="mNtalu" placeholder="Ex: 43" autocomplete="off">
+
+    <div class="consent-check">
+      <input type="checkbox" id="consentCheck">
+      <span>Confirmo que li o aviso de privacidade e autorizo a recolha de dados biométricos para efeitos de vigilância deste exame.</span>
+    </div>
+
+    <button class="btn-primary" id="yantikaBtn" disabled>Iniciar Sessão de Exame</button>
+  </div>
+</div>
+
+<!-- ══════════ ECRÃ DE EXAME ══════════ -->
+<div id="examScreen">
+  <main>
+    <div class="exam-grid">
+
+      <!-- LINHA SUPERIOR: INFRAÇÕES -->
+      <div class="infracoes-card">
+        <div>
+          <div class="panel-title" style="margin-bottom:8px;">Eventos Registados</div>
+          <div class="infracoes-list" id="infracoesList">
+            <span class="no-infra">Nenhuma infração detetada</span>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
+          <div class="student-badge" id="studentBadge">—</div>
+          <button class="btn-danger" id="finalizarBtn">Finalizar Sessão</button>
+        </div>
+      </div>
+
+      <!-- COLUNA ESQUERDA: VÍDEOS -->
+      <div class="video-panel">
+        <div class="panel-header">
+          <span class="panel-title">Feeds de Vigilância</span>
+          <span style="font-size:11px; font-family: 'JetBrains Mono', monospace; color: var(--text2);" id="faceStatus">Aguardando câmara...</span>
+        </div>
+        <div class="video-grid">
+          <div class="video-wrapper">
+            <video id="vCam" autoplay playsinline muted></video>
+            <div class="video-label">CAM — Candidato</div>
+            <div class="video-rec"><div class="rec-dot"></div> REC</div>
+          </div>
+          <div class="video-wrapper">
+            <video id="vScr" autoplay playsinline muted></video>
+            <div class="video-label">SCR — Partilha de Ecrã</div>
+            <div class="video-rec" style="display:none;" id="scrRec"><div class="rec-dot"></div> LIVE</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUNA DIREITA -->
+      <div class="right-column">
+
+        <!-- SCORE -->
+        <div class="score-card">
+          <div class="score-header">
+            <div>
+              <div class="score-value high" id="scoreValue">100</div>
+              <div class="score-label">Índice de Integridade</div>
+            </div>
+            <div id="statusCard" class="status-card ok" style="flex:1; margin-left:16px; padding:10px 14px;">
+              <div class="status-icon" id="statusIcon">✅</div>
+              <div class="status-text" id="statusText">Foco Validado</div>
+            </div>
+          </div>
+          <div class="score-bar-track">
+            <div class="score-bar-fill" id="scoreBar" style="width:100%;"></div>
+          </div>
+        </div>
+
+        <!-- AUDIO -->
+        <div class="audio-card">
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <div class="panel-title">Nível de Áudio</div>
+            <span style="font-size:11px; font-family:'JetBrains Mono',monospace; color:var(--text2);" id="audioLabel">Silêncio</span>
+          </div>
+          <div class="audio-bar-track">
+            <div id="aBar"></div>
+          </div>
+        </div>
+
+        <!-- IA ANOTAÇÕES -->
+        <div class="ia-card">
+          <div class="panel-header">
+            <span class="panel-title">🤖 Assistente IA — Anotações</span>
+            <span style="font-size:11px; color:var(--blue); font-weight:500;">claude-sonnet</span>
+          </div>
+          <div class="ia-chat" id="iaChat"></div>
+          <div class="ia-input-area">
+            <input type="text" id="iaInput" placeholder="Faça uma pergunta sobre a sessão...">
+            <button class="ia-send-btn" id="iaSendBtn" title="Enviar">➤</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- MEDIAPIPE -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+
 <script>
-        const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwX_SH0oPf7-WpZa7-4w5bqnoEvIhp3RN4iEOCgvCRJMHCsNYN2S8KDiQpEUqGoTNUs/exec";
-        
-        const vCam = document.getElementById("vCam");
-        const sBox = document.getElementById("sBox");
-        const placar = document.getElementById("placarConfianca");
-        const finalizarBtn = document.getElementById("finalizarBtn");
-        const painelFlutuante = document.getElementById("painelFlutuante");
-        
-        let kuyingila = false;
-        let confianca = 100;
-        let infrações = [];
-        let galeriaFotos = [];
-        let inicioDistracao = 0;
-        let estaDistraido = false;
+// ══════════════════════════════════════════════
+// CONFIGURAÇÃO
+// ══════════════════════════════════════════════
+const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwX_SH0oPf7-WpZa7-4w5bqnoEvIhp3RN4iEOCgvCRJMHCsNYN2S8KDiQpEUqGoTNUs/exec";
+const ANTHROPIC_API = "https://api.anthropic.com/v1/messages";
 
-        document.addEventListener("visibilitychange", () => {
-            if (document.hidden && kuyingila) {
-                samuna("⚠️ GRAVE: Saiu da aba!", "grave");
-                subtrair(20, "Mudança de Aba/Navegador detetada");
-            }
-        });
+// ══════════════════════════════════════════════
+// ESTADO GLOBAL
+// ══════════════════════════════════════════════
+let kuyingila = false;
+let confianca = 100;
+let infracoes = [];
+let galeriaFotos = [];
+let inicioDistracao = 0;
+let estaDistraido = false;
+let sessionLogs = [];       // Log completo para a IA
+let sessionStart = null;
+let timerInterval = null;
+let iaThinking = false;
+let retryCount = 0;
 
-        const luseMatadi = new FaceMesh({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`});
-        luseMatadi.setOptions({ maxNumFaces: 2, refineLandmarks: true, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
+// Histórico de conversa com a IA (multi-turn)
+let iaHistory = [];
 
-        luseMatadi.onResults((bima) => {
-            if (!kuyingila) return;
-            
-            let condicaoInfracao = false;
-            let msgInfracao = "";
+// ══════════════════════════════════════════════
+// DOM
+// ══════════════════════════════════════════════
+const vCam   = document.getElementById("vCam");
+const vScr   = document.getElementById("vScr");
+const scoreV = document.getElementById("scoreValue");
+const scoreB = document.getElementById("scoreBar");
+const statusCard = document.getElementById("statusCard");
+const statusIcon = document.getElementById("statusIcon");
+const statusText = document.getElementById("statusText");
+const iaChat = document.getElementById("iaChat");
+const iaInput = document.getElementById("iaInput");
+const iaSendBtn = document.getElementById("iaSendBtn");
+const infracoesList = document.getElementById("infracoesList");
+const audioLabel = document.getElementById("audioLabel");
+const finalizarBtn = document.getElementById("finalizarBtn");
+const headerDot = document.getElementById("headerDot");
+const headerStatusText = document.getElementById("headerStatusText");
+const faceStatus = document.getElementById("faceStatus");
+const sessionTimerEl = document.getElementById("sessionTimer");
+const studentBadge = document.getElementById("studentBadge");
 
-            if (!bima.multiFaceLandmarks || bima.multiFaceLandmarks.length === 0) {
-                condicaoInfracao = true; msgInfracao = "⚠️ Ausência de rosto!";
-            } else if (bima.multiFaceLandmarks.length > 1) {
-                samuna("⚠️ Múltiplas pessoas!", "grave");
-                subtrair(10, "Presença de terceiros");
-            } else {
-                const rosto = bima.multiFaceLandmarks[0];
-                const nwaZ = Math.abs(rosto[14].y - rosto[13].y);
-                const propRostoX = (rosto[1].x - rosto[234].x) / (rosto[454].x - rosto[234].x);
-                const cabecaVirada = (propRostoX < 0.35 || propRostoX > 0.65);
-                const propOlho = (rosto[473].x - rosto[362].x) / (rosto[263].x - rosto[362].x);
-                const olharDesviado = (propOlho < 0.35 || propOlho > 0.65);
+// ══════════════════════════════════════════════
+// CONSENTIMENTO
+// ══════════════════════════════════════════════
+document.getElementById("consentCheck").addEventListener("change", (e) => {
+  document.getElementById("yantikaBtn").disabled = !e.target.checked;
+});
 
-                if (nwaZ > 0.06) { condicaoInfracao = true; msgInfracao = "⚠️ Fala/Movimento labial"; }
-                else if (cabecaVirada) { condicaoInfracao = true; msgInfracao = "⚠️ Cabeça virada fora do eixo"; }
-                else if (olharDesviado) { condicaoInfracao = true; msgInfracao = "⚠️ Olhar fora da tela"; }
-            }
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+function showToast(msg, type = "info", duration = 3500) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "show " + type;
+  clearTimeout(t._timeout);
+  t._timeout = setTimeout(() => { t.className = ""; }, duration);
+}
 
-            if (condicaoInfracao) {
-                if (!estaDistraido) { estaDistraido = true; inicioDistracao = Date.now(); }
-                else {
-                    if (Date.now() - inicioDistracao > 1500) { 
-                        samuna(msgInfracao, "danger");
-                        subtrair(1, msgInfracao + " (> 1.5s)");
-                        inicioDistracao = Date.now();
-                    }
-                }
-            } else {
-                estaDistraido = false;
-                if (sBox.className !== "status-grave") samuna("✅ Foco Validado", "normal");
-            }
-        });
+// ══════════════════════════════════════════════
+// TIMER DE SESSÃO
+// ══════════════════════════════════════════════
+function startTimer() {
+  sessionStart = Date.now();
+  sessionTimerEl.style.display = "block";
+  timerInterval = setInterval(() => {
+    const s = Math.floor((Date.now() - sessionStart) / 1000);
+    const m = Math.floor(s / 60).toString().padStart(2, "0");
+    const ss = (s % 60).toString().padStart(2, "0");
+    sessionTimerEl.textContent = m + ":" + ss;
+  }, 1000);
+}
 
-        // FOTÓGRAFO DE COMPRESSÃO EXTREMA (Para evitar bloqueio de rede)
-        function capturarFotoAuditoria() {
-            if (galeriaFotos.length < 4 && vCam.readyState === 4 && kuyingila) {
-                const canvas = document.createElement("canvas");
-                canvas.width = 240; canvas.height = 180; // Resolução ultra leve
-                canvas.getContext("2d").drawImage(vCam, 0, 0, 240, 180);
-                galeriaFotos.push(canvas.toDataURL("image/jpeg", 0.1)); // Qualidade 10%
-                
-                if(galeriaFotos.length < 4) {
-                    setTimeout(capturarFotoAuditoria, 15000); // Tira a cada 15 segs no teste
-                }
-            }
+// ══════════════════════════════════════════════
+// DETEÇÃO DE ABA
+// ══════════════════════════════════════════════
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && kuyingila) {
+    samuna("⚠️ Saiu da aba!", "danger");
+    subtrair(20, "Mudança de Aba detectada");
+    logEvento("GRAVE", "Candidato saiu da aba do navegador");
+  }
+});
+
+// ══════════════════════════════════════════════
+// FACE MESH
+// ══════════════════════════════════════════════
+const luseMatadi = new FaceMesh({
+  locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+});
+
+luseMatadi.setOptions({
+  maxNumFaces: 2,
+  refineLandmarks: true,
+  minDetectionConfidence: 0.6,
+  minTrackingConfidence: 0.6
+});
+
+// Suavização com janela deslizante
+const detectionBuffer = { ausente: 0, multiplos: 0, labial: 0, virada: 0, olhar: 0 };
+const THRESHOLD = 8; // frames consecutivos antes de penalizar
+
+luseMatadi.onResults((bima) => {
+  if (!kuyingila) return;
+
+  let condicaoInfracao = false;
+  let msgInfracao = "";
+
+  if (!bima.multiFaceLandmarks || bima.multiFaceLandmarks.length === 0) {
+    detectionBuffer.ausente++;
+    if (detectionBuffer.ausente > THRESHOLD) {
+      condicaoInfracao = true;
+      msgInfracao = "⚠️ Rosto ausente da câmara";
+    }
+    faceStatus.textContent = "Rosto não detetado";
+    faceStatus.style.color = "var(--red)";
+  } else {
+    detectionBuffer.ausente = 0;
+
+    if (bima.multiFaceLandmarks.length > 1) {
+      detectionBuffer.multiplos++;
+      if (detectionBuffer.multiplos > THRESHOLD) {
+        samuna("⚠️ Múltiplas pessoas!", "danger");
+        subtrair(10, "Presença de terceiros detetada");
+        logEvento("GRAVE", "Múltiplos rostos na câmara");
+        detectionBuffer.multiplos = 0;
+      }
+    } else {
+      detectionBuffer.multiplos = 0;
+      const rosto = bima.multiFaceLandmarks[0];
+
+      // Movimento labial
+      const nwaZ = Math.abs(rosto[14].y - rosto[13].y);
+      // Cabeça virada
+      const propX = (rosto[1].x - rosto[234].x) / (rosto[454].x - rosto[234].x);
+      const cabecaVirada = propX < 0.30 || propX > 0.70;
+      // Olhar desviado
+      const propOlho = (rosto[473].x - rosto[362].x) / (rosto[263].x - rosto[362].x);
+      const olharDesviado = propOlho < 0.30 || propOlho > 0.70;
+
+      faceStatus.textContent = "Rosto detetado ✓";
+      faceStatus.style.color = "var(--green)";
+
+      if (nwaZ > 0.07) {
+        detectionBuffer.labial++;
+        if (detectionBuffer.labial > THRESHOLD) {
+          condicaoInfracao = true; msgInfracao = "⚠️ Movimento labial suspeito";
+          detectionBuffer.labial = 0;
         }
+      } else detectionBuffer.labial = Math.max(0, detectionBuffer.labial - 1);
 
-        function subtrair(pts, motivo) {
-            confianca = Math.max(0, confianca - pts);
-            if (!infrações.includes(motivo)) infrações.push(motivo);
-            placar.innerText = "Integridade: " + Math.round(confianca) + "%";
-            if(confianca < 70) { placar.style.color = "#c0392b"; placar.style.borderColor = "#c0392b"; }
-            else if(confianca < 90) { placar.style.color = "#f39c12"; placar.style.borderColor = "#f39c12"; }
+      if (cabecaVirada) {
+        detectionBuffer.virada++;
+        if (detectionBuffer.virada > THRESHOLD) {
+          condicaoInfracao = true; msgInfracao = "⚠️ Cabeça virada fora do eixo";
+          detectionBuffer.virada = 0;
         }
+      } else detectionBuffer.virada = Math.max(0, detectionBuffer.virada - 1);
 
-        async function wunikina(s) {
-            const mazuNza = new (window.AudioContext || window.webkitAudioContext)();
-            const nto = mazuNza.createMediaStreamSource(s);
-            const fimp = mazuNza.createScriptProcessor(2048, 1, 1);
-            nto.connect(fimp); fimp.connect(mazuNza.destination);
-            fimp.onaudioprocess = (e) => {
-                const m = e.inputBuffer.getChannelData(0);
-                let nt = 0; for (let i = 0; i < m.length; i++) nt += m[i] * m[i];
-                const vol = Math.min(Math.sqrt(nt / m.length) * 800, 100);
-                document.getElementById("aBar").style.width = vol + "%";
-                if (vol > 70) { samuna("⚠️ Ruído Alto!", "danger"); subtrair(2, "Ruído elevado"); }
-            };
+      if (olharDesviado) {
+        detectionBuffer.olhar++;
+        if (detectionBuffer.olhar > THRESHOLD) {
+          condicaoInfracao = true; msgInfracao = "⚠️ Olhar fora do ecrã";
+          detectionBuffer.olhar = 0;
         }
+      } else detectionBuffer.olhar = Math.max(0, detectionBuffer.olhar - 1);
+    }
+  }
 
-        document.getElementById("yantikaBtn").addEventListener("click", async () => {
-            const nome = document.getElementById("mZina").value;
-            const num = document.getElementById("mNtalu").value;
-            if (!nome || !num) return alert("Preencha os dados primeiro!");
+  if (condicaoInfracao) {
+    if (!estaDistraido) {
+      estaDistraido = true;
+      inicioDistracao = Date.now();
+    } else if (Date.now() - inicioDistracao > 2000) {
+      samuna(msgInfracao, "danger");
+      subtrair(1, msgInfracao);
+      logEvento("ALERTA", msgInfracao);
+      inicioDistracao = Date.now();
+    }
+  } else {
+    estaDistraido = false;
+    samuna("✅ Foco Validado", "ok");
+  }
+});
 
-            document.getElementById("idArea").style.display = "none";
-            document.getElementById("instrucoesTxt").innerText = "Sessão Iniciada. O seu comportamento está a ser avaliado pela IA.";
-            document.getElementById("eArea").style.display = "block";
-            finalizarBtn.style.display = "block";
-            painelFlutuante.style.display = "block";
+// ══════════════════════════════════════════════
+// SCORE
+// ══════════════════════════════════════════════
+function subtrair(pts, motivo) {
+  confianca = Math.max(0, confianca - pts);
+  if (!infracoes.includes(motivo)) {
+    infracoes.push(motivo);
+    atualizarInfrações();
+  }
+  atualizarScore();
+}
 
-            try { const t1 = await navigator.mediaDevices.getDisplayMedia({ video: true }); document.getElementById("vScr").srcObject = t1; } 
-            catch (err) { subtrair(5, "Sem partilha de ecrã"); }
+function atualizarScore() {
+  const v = Math.round(confianca);
+  scoreV.textContent = v;
+  scoreB.style.width = v + "%";
+  if (v >= 80) {
+    scoreV.className = "score-value high";
+    scoreB.style.background = "var(--green)";
+  } else if (v >= 60) {
+    scoreV.className = "score-value mid";
+    scoreB.style.background = "var(--yellow)";
+  } else {
+    scoreV.className = "score-value low";
+    scoreB.style.background = "var(--red)";
+  }
+}
 
-            try {
-                const t2 = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                vCam.srcObject = t2;
-                await wunikina(t2);
-                await luseMatadi.initialize();
-                kuyingila = true;
-                capturarFotoAuditoria();
-                function luzingu() { if (kuyingila) { luseMatadi.send({image: vCam}); requestAnimationFrame(luzingu); } }
-                luzingu();
-            } catch (err) { alert("Erro: Permita a câmara."); location.reload(); }
-        });
+function atualizarInfrações() {
+  if (infracoes.length === 0) {
+    infracoesList.innerHTML = '<span class="no-infra">Nenhuma infração detetada</span>';
+  } else {
+    infracoesList.innerHTML = infracoes.map(i =>
+      `<span class="infra-tag">${i.replace("⚠️ ", "")}</span>`
+    ).join("");
+  }
+}
 
-        finalizarBtn.addEventListener("click", async () => {
-            finalizarBtn.innerText = "A Enviar Relatório (Aguarde)...";
-            finalizarBtn.disabled = true;
-            kuyingila = false;
-            painelFlutuante.style.display = "none";
+function samuna(msg, tipo) {
+  const map = {
+    ok:     { icon: "✅", text: msg, cls: "ok" },
+    warn:   { icon: "⚠️", text: msg, cls: "warn" },
+    danger: { icon: "🚨", text: msg, cls: "danger" },
+    normal: { icon: "✅", text: msg, cls: "ok" }
+  };
+  const t = map[tipo] || map.ok;
+  statusIcon.textContent = t.icon;
+  statusText.textContent = t.text.replace("✅ ", "").replace("⚠️ ", "").replace("🚨 ", "");
+  statusCard.className = "status-card " + t.cls;
+}
 
-            const dados = {
-                nome: document.getElementById("mZina").value,
-                numero: document.getElementById("mNtalu").value,
-                confianca: Math.round(confianca),
-                observacoes: infrações.length > 0 ? infrações.join(" | ") : "Nenhuma infração detetada",
-                fotos: galeriaFotos
-            };
+// ══════════════════════════════════════════════
+// LOG DE EVENTOS
+// ══════════════════════════════════════════════
+function logEvento(tipo, descricao) {
+  const ts = sessionStart
+    ? Math.floor((Date.now() - sessionStart) / 1000) + "s"
+    : "0s";
+  sessionLogs.push({ ts, tipo, descricao });
 
-            try {
-                await fetch(WEBHOOK_URL, { 
-                    method: "POST", 
-                    mode: "no-cors", 
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify(dados) 
-                });
-                alert("Sessão finalizada. Relatório enviado.");
-                location.reload();
-            } catch (e) {
-                alert("Falha de rede local.");
-                finalizarBtn.disabled = false;
-            }
-        });
+  // Adicionar ao chat como evento automático
+  const el = document.createElement("div");
+  el.className = "ia-msg event";
+  el.innerHTML = `<strong>[${ts}]</strong> ${descricao}`;
+  iaChat.appendChild(el);
+  iaChat.scrollTop = iaChat.scrollHeight;
+}
 
-        function samuna(msg, tipo) { sBox.innerText = msg; sBox.className = "status-" + tipo; }
-    </script>
+// ══════════════════════════════════════════════
+// IA — ASSISTENTE DE ANOTAÇÕES
+// ══════════════════════════════════════════════
+function buildSystemPrompt() {
+  const nome = document.getElementById("mZina").value;
+  const num = document.getElementById("mNtalu").value;
+  return `Você é um assistente de vigilância académica da ProctorAI. Está a monitorizar o exame de ${nome} (Nº ${num}).
+
+A sessão está a decorrer em tempo real. Os eventos registados automaticamente até agora são:
+${sessionLogs.map(l => `[${l.ts}] ${l.tipo}: ${l.descricao}`).join("\n") || "Nenhum evento registado."}
+
+Infrações acumuladas: ${infracoes.join(", ") || "Nenhuma"}
+Índice de integridade atual: ${Math.round(confianca)}%
+
+Responda de forma objetiva, profissional e em português. Pode:
+- Explicar comportamentos suspeitos detetados
+- Sugerir ao supervisor medidas a tomar
+- Analisar padrões de comportamento
+- Responder perguntas sobre a sessão
+- Gerar um resumo executivo da sessão quando pedido
+
+Seja conciso (máx. 3 frases por resposta, exceto em resumos).`;
+}
+
+async function enviarMensagemIA(pergunta) {
+  if (iaThinking) return;
+  iaThinking = true;
+  iaSendBtn.disabled = true;
+
+  // Adicionar mensagem do utilizador ao chat
+  const userEl = document.createElement("div");
+  userEl.className = "ia-msg";
+  userEl.innerHTML = `<strong>Você:</strong> ${pergunta}`;
+  iaChat.appendChild(userEl);
+
+  // Indicador de digitação
+  const thinkEl = document.createElement("div");
+  thinkEl.className = "ia-msg system";
+  thinkEl.innerHTML = '<span class="spinner"></span>A analisar...';
+  iaChat.appendChild(thinkEl);
+  iaChat.scrollTop = iaChat.scrollHeight;
+
+  // Adicionar ao histórico
+  iaHistory.push({ role: "user", content: pergunta });
+
+  try {
+    const response = await fetch(ANTHROPIC_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: buildSystemPrompt(),
+        messages: iaHistory
+      })
+    });
+
+    const data = await response.json();
+    const resposta = data.content?.[0]?.text || "Não foi possível obter resposta.";
+
+    // Adicionar resposta ao histórico
+    iaHistory.push({ role: "assistant", content: resposta });
+
+    // Remover spinner e mostrar resposta
+    thinkEl.remove();
+    const botEl = document.createElement("div");
+    botEl.className = "ia-msg";
+    botEl.innerHTML = `<strong>IA:</strong> ${resposta}`;
+    iaChat.appendChild(botEl);
+    iaChat.scrollTop = iaChat.scrollHeight;
+
+  } catch(err) {
+    thinkEl.innerHTML = "⚠️ Erro de ligação com a IA.";
+    thinkEl.className = "ia-msg event";
+  }
+
+  iaThinking = false;
+  iaSendBtn.disabled = false;
+}
+
+iaSendBtn.addEventListener("click", () => {
+  const q = iaInput.value.trim();
+  if (!q) return;
+  iaInput.value = "";
+  enviarMensagemIA(q);
+});
+
+iaInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    iaSendBtn.click();
+  }
+});
+
+// ══════════════════════════════════════════════
+// ÁUDIO
+// ══════════════════════════════════════════════
+async function wunikina(stream) {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const src = ctx.createMediaStreamSource(stream);
+  const proc = ctx.createScriptProcessor(2048, 1, 1);
+  src.connect(proc);
+  proc.connect(ctx.destination);
+  proc.onaudioprocess = (e) => {
+    const data = e.inputBuffer.getChannelData(0);
+    let rms = 0;
+    for (let i = 0; i < data.length; i++) rms += data[i] * data[i];
+    const vol = Math.min(Math.sqrt(rms / data.length) * 800, 100);
+    const bar = document.getElementById("aBar");
+    bar.style.width = vol + "%";
+    if (vol > 65) {
+      bar.style.background = "var(--red)";
+      audioLabel.textContent = "Ruído Elevado!";
+      audioLabel.style.color = "var(--red)";
+      subtrair(2, "Ruído de áudio elevado");
+      logEvento("ALERTA", "Ruído elevado detetado (vol=" + Math.round(vol) + ")");
+    } else if (vol > 30) {
+      bar.style.background = "var(--yellow)";
+      audioLabel.textContent = "Fala Detetada";
+      audioLabel.style.color = "var(--yellow)";
+    } else {
+      bar.style.background = "var(--green)";
+      audioLabel.textContent = "Silêncio";
+      audioLabel.style.color = "var(--text2)";
+    }
+  };
+}
+
+// ══════════════════════════════════════════════
+// CAPTURA DE FOTOS
+// ══════════════════════════════════════════════
+function capturarFoto() {
+  if (galeriaFotos.length < 4 && vCam.readyState === 4 && kuyingila) {
+    const c = document.createElement("canvas");
+    c.width = 320; c.height = 240;
+    c.getContext("2d").drawImage(vCam, 0, 0, 320, 240);
+    galeriaFotos.push(c.toDataURL("image/jpeg", 0.15));
+    logEvento("SISTEMA", `Fotografia ${galeriaFotos.length}/4 capturada`);
+    if (galeriaFotos.length < 4) {
+      const nextDelay = 60000 + Math.random() * 30000; // 60-90s aleatório
+      setTimeout(capturarFoto, nextDelay);
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
+// INICIAR SESSÃO
+// ══════════════════════════════════════════════
+document.getElementById("yantikaBtn").addEventListener("click", async () => {
+  const nome = document.getElementById("mZina").value.trim();
+  const num = document.getElementById("mNtalu").value.trim();
+  if (!nome || !num) return showToast("Preencha todos os campos.", "error");
+
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("examScreen").style.display = "block";
+  studentBadge.textContent = nome + " · " + num;
+
+  headerDot.classList.add("active");
+  headerStatusText.textContent = "Sessão Ativa";
+  startTimer();
+
+  // ECRÃ PARTILHADO
+  try {
+    const scrStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+    vScr.srcObject = scrStream;
+    document.getElementById("scrRec").style.display = "flex";
+    showToast("Partilha de ecrã ativa.", "success");
+    logEvento("SISTEMA", "Partilha de ecrã iniciada");
+  } catch {
+    subtrair(5, "Recusou partilha de ecrã");
+    logEvento("ALERTA", "Candidato recusou a partilha de ecrã");
+    showToast("Partilha de ecrã não autorizada. -5 pontos.", "error");
+  }
+
+  // CÂMARA + MIC
+  try {
+    const camStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    vCam.srcObject = camStream;
+    await wunikina(camStream);
+    await luseMatadi.initialize();
+    kuyingila = true;
+
+    // Mensagem de boas-vindas da IA
+    setTimeout(() => {
+      const el = document.createElement("div");
+      el.className = "ia-msg";
+      el.innerHTML = `<strong>IA:</strong> Sessão iniciada para <strong>${nome}</strong>. Estou a monitorizar o comportamento em tempo real. Pode fazer-me perguntas sobre a sessão a qualquer momento.`;
+      iaChat.appendChild(el);
+    }, 1000);
+
+    capturarFoto();
+
+    function luzingu() {
+      if (kuyingila) {
+        luseMatadi.send({ image: vCam });
+        requestAnimationFrame(luzingu);
+      }
+    }
+    luzingu();
+
+    logEvento("SISTEMA", "Sessão iniciada com câmara e microfone ativos");
+    showToast("Sessão iniciada. Seja bem-sucedido!", "success");
+
+  } catch (err) {
+    alert("Erro: Por favor, permita o acesso à câmara e ao microfone.");
+    location.reload();
+  }
+});
+
+// ══════════════════════════════════════════════
+// FINALIZAR SESSÃO
+// ══════════════════════════════════════════════
+finalizarBtn.addEventListener("click", async () => {
+  if (!confirm("Confirma que deseja finalizar a sessão de exame?")) return;
+
+  kuyingila = false;
+  clearInterval(timerInterval);
+  finalizarBtn.disabled = true;
+  finalizarBtn.innerHTML = '<span class="spinner"></span>A enviar relatório...';
+
+  headerDot.classList.remove("active");
+  headerStatusText.textContent = "A Encerrar...";
+
+  // Pedir resumo final à IA antes de enviar
+  let resumoIA = "Resumo IA indisponível.";
+  try {
+    const resp = await fetch(ANTHROPIC_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: buildSystemPrompt(),
+        messages: [
+          ...iaHistory,
+          { role: "user", content: "Gera um resumo executivo conciso desta sessão de exame para o supervisor, incluindo: comportamento geral, eventos mais graves, índice de integridade final e recomendação." }
+        ]
+      })
+    });
+    const d = await resp.json();
+    resumoIA = d.content?.[0]?.text || "Sem resumo disponível.";
+  } catch { /* resumo não disponível */ }
+
+  const dados = {
+    nome: document.getElementById("mZina").value,
+    numero: document.getElementById("mNtalu").value,
+    confianca: Math.round(confianca),
+    observacoes: infracoes.length > 0 ? infracoes.join(" | ") : "Nenhuma infração detetada",
+    resumoIA: resumoIA,
+    fotos: galeriaFotos
+  };
+
+  // Envio com retry
+  let enviado = false;
+  for (let i = 0; i < 3; i++) {
+    try {
+      await fetch(WEBHOOK_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(dados)
+      });
+      enviado = true;
+      break;
+    } catch (e) {
+      if (i < 2) await new Promise(r => setTimeout(r, 2000));
+    }
+  }
+
+  if (enviado) {
+    showToast("Relatório enviado com sucesso.", "success", 5000);
+  } else {
+    // Fallback: guardar localmente
+    const blob = new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "relatorio_" + dados.nome + ".json"; a.click();
+    showToast("Falha de rede. Relatório guardado localmente.", "error", 6000);
+  }
+
+  setTimeout(() => location.reload(), 4000);
+});
+</script>
 </body>
 </html>
