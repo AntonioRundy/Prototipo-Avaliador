@@ -474,12 +474,23 @@ gerarBtn.addEventListener("click", async () => {
   };
 
   try {
-    await fetch(WEBHOOK_URL, {
+    // Sem mode: "no-cors" — o Apps Script já devolve Access-Control-Allow-Origin: *,
+    // por isso conseguimos ler a resposta real e saber se o servidor recusou o
+    // pedido (chave errada, ou prova já com submissões) em vez de assumir sucesso.
+    const resp = await fetch(WEBHOOK_URL, {
       method: "POST",
-      mode: "no-cors",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     });
+    const resultadoServidor = await resp.json();
+
+    if (!resultadoServidor.ok) {
+      showToast("❌ " + (resultadoServidor.erro || "O servidor recusou criar a prova."));
+      gerarBtn.disabled = false;
+      gerarBtn.textContent = "Gerar Link da Prova";
+      return;
+    }
+
     const link = SITE_URL + "?prova=" + id;
     linkGerado.value = link;
     resultado.style.display = "block";

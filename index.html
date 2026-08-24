@@ -1190,7 +1190,8 @@ document.addEventListener("visibilitychange", () => {
   if (document.hidden && kuyingila) {
     samuna("⚠️ Saiu da aba!", "danger");
     subtrair(20, "Mudança de Aba detectada");
-    logEvento("GRAVE", "Candidato saiu da aba do navegador");
+    logEvento("GRAVE", "Candidato saiu da aba/minimizou o navegador — sessão terminada automaticamente");
+    finalizarSessao("Saiu da aba ou minimizou o navegador durante o exame");
   }
 });
 
@@ -1808,9 +1809,17 @@ document.getElementById("yantikaBtn").addEventListener("click", async () => {
     showToast("Partilha de ecrã não autorizada. -5 pontos.", "error");
   }
 
-  // CÂMARA + MIC
+  // CÂMARA + MIC — ambos são obrigatórios. Recusar (ou o SO bloquear em silêncio,
+  // devolvendo uma track "morta" em vez de rejeitar o pedido) termina o exame de
+  // imediato e consome o link do aluno, tal como qualquer outra violação grave.
   try {
     const camStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    const vTrack = camStream.getVideoTracks()[0];
+    const aTrack = camStream.getAudioTracks()[0];
+    if (!vTrack || vTrack.readyState !== "live" || !aTrack || aTrack.readyState !== "live") {
+      throw new Error("Câmara ou microfone sem sinal ativo.");
+    }
+
     vCam.srcObject = camStream;
     await wunikina(camStream);
     await luseMatadi.initialize();
@@ -1837,16 +1846,24 @@ document.getElementById("yantikaBtn").addEventListener("click", async () => {
     showToast("Sessão iniciada. Seja bem-sucedido!", "success");
 
   } catch (err) {
-    alert("Erro: Por favor, permita o acesso à câmara e ao microfone.");
-    location.reload();
+    subtrair(100, "Recusou o acesso à câmara/microfone");
+    logEvento("GRAVE", "Câmara e/ou microfone não autorizados ou indisponíveis — exame bloqueado e terminado automaticamente (" + (err.message || err) + ")");
+    await finalizarSessao("Câmara e/ou microfone não autorizados — o exame exige ambos para poder decorrer");
   }
 });
 
 // ══════════════════════════════════════════════
 // FINALIZAR SESSÃO
 // ══════════════════════════════════════════════
-finalizarBtn.addEventListener("click", async () => {
-  if (!confirm("Confirma que deseja finalizar a sessão de exame?")) return;
+// motivoAutomatico: undefined/null quando o próprio aluno clica em "Finalizar" (pede
+// confirmação). Quando chamada pela deteção de saída de aba/minimização, é uma string
+// com o motivo — a sessão termina de imediato, sem confirmação, e o relatório é
+// enviado ao professor marcado como terminado automaticamente.
+let sessaoJaFinalizada = false;
+async function finalizarSessao(motivoAutomatico) {
+  if (sessaoJaFinalizada) return;
+  if (!motivoAutomatico && !confirm("Confirma que deseja finalizar a sessão de exame?")) return;
+  sessaoJaFinalizada = true;
 
   kuyingila = false;
   clearInterval(timerInterval);
@@ -1854,7 +1871,11 @@ finalizarBtn.addEventListener("click", async () => {
   finalizarBtn.innerHTML = '<span class="spinner"></span>A enviar relatório...';
 
   headerDot.classList.remove("active");
-  headerStatusText.textContent = "A Encerrar...";
+  headerStatusText.textContent = motivoAutomatico ? "Exame Terminado" : "A Encerrar...";
+
+  if (motivoAutomatico) {
+    showToast("🚫 " + motivoAutomatico + " — o exame foi terminado e o relatório enviado ao professor.", "error", 8000);
+  }
 
   // Pedir resumo final à IA antes de enviar
   let resumoIA = "Resumo IA indisponível.";
@@ -1880,7 +1901,8 @@ finalizarBtn.addEventListener("click", async () => {
     nome: document.getElementById("mZina").value,
     numero: document.getElementById("mNtalu").value,
     confianca: Math.round(confianca),
-    observacoes: infracoes.length > 0 ? infracoes.join(" | ") : "Nenhuma infração detetada",
+    observacoes: (motivoAutomatico ? "🚫 TERMINADO AUTOMATICAMENTE: " + motivoAutomatico + " | " : "") +
+      (infracoes.length > 0 ? infracoes.join(" | ") : "Nenhuma infração detetada"),
     resumoIA: resumoIA,
     estatisticas: construirEstatisticas(),
     eventos: sessionLogs,
@@ -1921,7 +1943,9 @@ finalizarBtn.addEventListener("click", async () => {
   }
 
   setTimeout(() => location.reload(), 4000);
-});
+}
+
+finalizarBtn.addEventListener("click", () => finalizarSessao());
 </script>
 </body>
 </html>
